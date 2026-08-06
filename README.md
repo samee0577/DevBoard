@@ -1,6 +1,6 @@
 # DevBoard
 # DevBoard — Full-Stack Project Management App
-<img width="1899" height="861" alt="image" src="https://github.com/user-attachments/assets/62b96e28-1be7-4260-a8b0-e5dcc92d1c75" />
+<img width="1866" height="881" alt="image" src="https://github.com/user-attachments/assets/2001462a-ce07-4d67-b8ea-d546d7963509" />
 
 DevBoard is a project management tool for tracking software projects, their features, and tasks — built as a hands-on learning project to go from a pure frontend React app to a genuine full-stack application with a real database.
 
