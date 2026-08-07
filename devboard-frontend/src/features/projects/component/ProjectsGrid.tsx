@@ -30,7 +30,7 @@ export default function ProjectsList() {
                 if (!navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
                 }
-                const res = await fetch("http://localhost:3001/api/projects").then(res => res.json())
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`).then(res => res.json())
                 return res
             }
         }
@@ -44,7 +44,7 @@ export default function ProjectsList() {
 
     const demoProject = async () => {
         try {
-            await fetch("http://localhost:3001/api/projects", {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

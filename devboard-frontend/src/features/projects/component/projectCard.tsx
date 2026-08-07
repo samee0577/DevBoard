@@ -12,7 +12,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
     const { mutate, isPending } = useMutation({
 
         mutationFn: async (projectId: number) => {
-            await fetch(`http://localhost:3001/api/projects/delete/${projectId}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/delete/${projectId}`, {
                 method: "DELETE"
             }).then(res => res.json());
         },

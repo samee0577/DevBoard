@@ -6,7 +6,7 @@ export default function Navbar() {
 
     const { data: projects, isLoading } = useQuery({
         queryKey: ["projects"],
-        queryFn: async () => await fetch("http://localhost:3001/api/projects").then(res => res.json())
+        queryFn: async () => await fetch(`${import.meta.env.VITE_API_URL}/api/projects`).then(res => res.json())
     })
 
     return (

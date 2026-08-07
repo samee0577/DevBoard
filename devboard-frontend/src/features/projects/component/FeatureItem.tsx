@@ -10,7 +10,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
     const client = useQueryClient();
     const { mutate: toggleTask, isPending } = useMutation({
         mutationFn: async (taskID: number) => {
-            await fetch(`http://localhost:3001/api/projects/toggleTask`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/toggleTask`, {
                 method: "PUT",
                 headers: { "content-Type": "application/json" },
                 body: JSON.stringify({ status: !feature.tasks.find(task => task.id === taskID)?.status, taskId: taskID, featureId: feature.id, projectId: ThisProjectId })
@@ -62,7 +62,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
 
     const { mutate: deleteFeature, isPending: isPendingDelete } = useMutation({
         mutationFn: async (featureId: number) => {
-            await fetch(`http://localhost:3001/api/projects/${ThisProjectId}/features/${featureId}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${ThisProjectId}/features/${featureId}`, {
                 method: "DELETE",
                 headers: { "content-Type": "application/json" }
             }).then(res => res.json())
@@ -93,7 +93,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
 
     const { mutate: updateFeature, isPending: isPendingEdit } = useMutation({
         mutationFn: async (updatedFeature: { title: string; tasks: { title: string; status: boolean }[] }) => {
-            const res = await fetch(`http://localhost:3001/api/projects/${ThisProjectId}/features/${feature.id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${ThisProjectId}/features/${feature.id}`, {
                 method: "PUT",
                 headers: { "content-Type": "application/json" },
                 body: JSON.stringify(updatedFeature)

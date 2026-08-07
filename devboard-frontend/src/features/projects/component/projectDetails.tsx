@@ -34,7 +34,7 @@ export default function ProjectDetails() {
                     throw new Error("NETWORK_OFFLINE")
                 }
 
-                const res = await fetch(`http://localhost:3001/api/projects/${projectId}`)
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}`)
 
                 if (!res.ok) {
                     throw new Error(`Request failed with status ${res.status}`)
@@ -53,7 +53,7 @@ export default function ProjectDetails() {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            const res = await fetch("http://localhost:3001/api/projects", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
                 method: 'put',
                 headers: { "content-Type": "application/json" },
                 body: JSON.stringify(editProjectData)
@@ -111,7 +111,7 @@ export default function ProjectDetails() {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            const res = await fetch(`http://localhost:3001/api/projects/${projectId}/features`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}/features`, {
                 method: 'put',
                 headers: { "content-Type": "application/json" },
                 body: JSON.stringify(featureData)
