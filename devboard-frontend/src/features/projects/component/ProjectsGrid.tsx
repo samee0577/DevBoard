@@ -83,7 +83,7 @@ export default function ProjectsList() {
             </div>
         )
     }
-    if (error) return <div><h1>{error.message}</h1></div>
+    if (error) return <div><h1>sorry something went wrong , please try again</h1></div>
 
     return (
         <div>
@@ -100,7 +100,7 @@ export default function ProjectsList() {
             {isLoading ? <h1>loading projects</h1> :
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "15px" }}>
-                    {projectData.map((project: projectType) => (
+                    {projectData?.map((project: projectType) => (
                         <ProjectCard
                             key={project.id}
                             project={project}
