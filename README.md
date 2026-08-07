@@ -1,4 +1,4 @@
-# DevBoard
+# DevBoard ![License](https://img.shields.io/github/license/samee0577/DevBoard)
 
 A full-stack project management tool for tracking software projects, their features, and tasks. Built as a hands-on learning project to go from a pure frontend React app to a genuine full-stack application with a real database.
 
