@@ -1,6 +1,5 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { ProjectsContext } from "../context/projectContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const inputStyle = {
@@ -67,9 +66,6 @@ export function validateProject(draft: NewProjectDraft): boolean {
 }
 
 export default function MyForm() {
-    const context = use(ProjectsContext);
-    if (!context) throw new Error("useProject must be used within a ProjectProvider");
-    // const { dispatch } = context;
 
     const queryClient = useQueryClient();
 

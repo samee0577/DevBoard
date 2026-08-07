@@ -4,7 +4,6 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom"
 import RootLayout from "./Layout/RootLayout"
 import Dashboard from "./pages/Dashboard"
 import { NewProject } from "./pages/NewProject"
-import { ProjectProvider } from "./features/projects"
 import ProjectDetail from "./pages/ProjectDetails"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 
@@ -33,9 +32,7 @@ const router = createBrowserRouter([
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
-  <ProjectProvider>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-    </QueryClientProvider>
-  </ProjectProvider>
+    </QueryClientProvider>  
 )
