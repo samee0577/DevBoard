@@ -8,14 +8,14 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true,
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const port = process.env.PORT||3001;
+const port = process.env.PORT || 3001;
 
 const { PGHOST,
     PGDATABASE,
@@ -194,12 +194,12 @@ app.get("/api/projects/:projectId", async (req, res) => {
         const featureResult = await client.query("SELECT * FROM features WHERE project_id=$1", [projectId]);
         const techStackResult = await client.query("SELECT * FROM tech_stack WHERE project_id=$1", [projectId]);
 
-        const featuresWithTasks = await Promise.all(
-            featureResult.rows.map(async (feature) => {
-                const taskResult = await client.query("SELECT * FROM tasks WHERE feature_id=$1", [feature.id]);
-                return { ...feature, tasks: taskResult.rows };
-            })
-        );
+        const featuresWithTasks = [];
+
+        for (const feature of featureResult.rows) {
+            const taskResult = await client.query("SELECT * FROM tasks WHERE feature_id=$1", [feature.id]);
+            featuresWithTasks.push({ ...feature, tasks: taskResult.rows });
+        }
 
         res.json({
             ...projectResult.rows[0],
@@ -246,7 +246,7 @@ app.get("/api/db-health", async (req, res) => {
 app.put("/api/projects/:projectId/features", async (req, res) => {
     let client;
     const { projectId } = req.params;
-    const feature  = req.body;
+    const feature = req.body;
     if (!feature) {
         return res.status(400).json({ error: "Feature object is required." });
     }
