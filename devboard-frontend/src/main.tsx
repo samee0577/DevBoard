@@ -8,7 +8,6 @@ import ProjectDetail from "./pages/ProjectDetails"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 import { Analytics } from '@vercel/analytics/react'
 
-
 const router = createBrowserRouter([
   {
     path: "/",
