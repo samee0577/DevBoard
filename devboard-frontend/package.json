@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
+    "@vercel/analytics": "^2.0.1",
     "playwright": "^1.61.1",
     "react": "^19.2.6",
     "react-circular-progressbar": "^2.2.0",
