@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import { NewProject } from "./pages/NewProject"
 import ProjectDetail from "./pages/ProjectDetails"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
+import { Analytics } from "@vercel/analytics/react"
 
 
 const router = createBrowserRouter([
@@ -34,5 +35,6 @@ const queryClient = new QueryClient()
 createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Analytics />
     </QueryClientProvider>  
 )
