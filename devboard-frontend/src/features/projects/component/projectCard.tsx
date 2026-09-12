@@ -21,7 +21,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
             queryClient.invalidateQueries({ queryKey: ["projects"] })
             closeDialog();
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             console.error("Error deleting project:", error);
             alert("Failed to delete the project. Please try again.");
             toast.error("Failed to delete the project.");

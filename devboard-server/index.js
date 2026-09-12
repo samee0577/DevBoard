@@ -126,12 +126,14 @@ app.put("/api/projects/:projectId/features/:featureId", async (req, res) => {
 
         await client.query(`DELETE FROM tasks WHERE feature_id=$1;`, [featureId]);
 
-        for (const task of normalizedTasks) {
-            await client.query(
-                `INSERT INTO tasks (title, status, feature_id) VALUES ($1, $2, $3);`,
-                [task.title, task.status, featureId]
-            );
-        }
+        // Optimization: Batch insert tasks in a single query using unnest instead of a for-loop.
+        // Expected impact: Reduces database roundtrips from O(N) queries for N tasks to 1 query (O(1)).
+        const taskTitles = normalizedTasks.map(t => t.title);
+        const taskStatuses = normalizedTasks.map(t => t.status);
+        await client.query(
+            `INSERT INTO tasks (title, status, feature_id) SELECT unnest($1::text[]), unnest($2::boolean[]), $3;`,
+            [taskTitles, taskStatuses, featureId]
+        );
 
         await client.query(`UPDATE features SET status = (SELECT bool_and(status) FROM tasks WHERE feature_id = $1) WHERE id = $1;`, [featureId]);
 
