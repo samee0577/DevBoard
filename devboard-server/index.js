@@ -194,12 +194,25 @@ app.get("/api/projects/:projectId", async (req, res) => {
         const featureResult = await client.query("SELECT * FROM features WHERE project_id=$1", [projectId]);
         const techStackResult = await client.query("SELECT * FROM tech_stack WHERE project_id=$1", [projectId]);
 
-        const featuresWithTasks = [];
+        // Optimization: Batch fetch all tasks for the project's features in a single query to solve N+1 database call bottleneck.
+        // Expected impact: Reduces database roundtrips from 3 + N queries down to 4 queries total.
+        const tasksResult = await client.query(
+            "SELECT tasks.* FROM tasks JOIN features ON tasks.feature_id = features.id WHERE features.project_id = $1",
+            [projectId]
+        );
 
-        for (const feature of featureResult.rows) {
-            const taskResult = await client.query("SELECT * FROM tasks WHERE feature_id=$1", [feature.id]);
-            featuresWithTasks.push({ ...feature, tasks: taskResult.rows });
+        const tasksByFeatureId = new Map();
+        for (const task of tasksResult.rows) {
+            if (!tasksByFeatureId.has(task.feature_id)) {
+                tasksByFeatureId.set(task.feature_id, []);
+            }
+            tasksByFeatureId.get(task.feature_id).push(task);
         }
+
+        const featuresWithTasks = featureResult.rows.map((feature) => ({
+            ...feature,
+            tasks: tasksByFeatureId.get(feature.id) || []
+        }));
 
         res.json({
             ...projectResult.rows[0],
