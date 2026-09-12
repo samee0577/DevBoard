@@ -15,6 +15,31 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// In-memory rate limiting middleware
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX_REQUESTS = 100;
+
+const apiRateLimiter = (req, res, next) => {
+    const ip = req.ip || req.socket.remoteAddress || "unknown";
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+
+    if (!record || now - record.startTime > RATE_LIMIT_WINDOW_MS) {
+        rateLimitMap.set(ip, { count: 1, startTime: now });
+        return next();
+    }
+
+    if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+        return res.status(429).json({ error: "Too many requests, please try again later." });
+    }
+
+    record.count += 1;
+    next();
+};
+
+app.use("/api/", apiRateLimiter);
+
 const port = process.env.PORT || 3001;
 
 const { PGHOST,
