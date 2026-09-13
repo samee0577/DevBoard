@@ -89,16 +89,28 @@ export default function ProjectsList() {
         <div>
             <h1>Projects</h1>
             <Link to="/newProject">
-                <button style={{ padding: "10px", margin: "10px", border: "1px solid black", borderRadius: 10, cursor: "pointer" }}>
+                <button className="buttonStyle" style={{ padding: "10px 15px", margin: "10px", cursor: "pointer", display: "inline-block" }}>
                     Add New Project
                 </button>
             </Link>
-            <button onClick={demoProject} style={{ padding: "10px", margin: "10px", border: "2px solid red", borderRadius: 10, cursor: "pointer", backgroundColor: "white" }}>
+            <button className="buttonStyle" onClick={demoProject} style={{ padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
                 [demo button]
             </button>
 
-            {isLoading ? <h1>loading projects</h1> :
-
+            {isLoading ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "15px" }}>
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <div key={n} className="project-card skeleton-card">
+                            <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: "10px", marginBottom: "12px" }}>
+                                <div className="skeleton-line" style={{ height: "24px", width: "70%" }}></div>
+                                <div className="skeleton-circle" style={{ width: "40px", height: "40px", justifySelf: "end" }}></div>
+                            </div>
+                            <div className="skeleton-line" style={{ height: "16px", width: "90%", marginTop: "8px" }}></div>
+                            <div className="skeleton-line" style={{ height: "16px", width: "60%", marginTop: "6px" }}></div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "15px" }}>
                     {projectData?.map((project: projectType) => (
                         <ProjectCard
@@ -107,7 +119,7 @@ export default function ProjectsList() {
                         />
                     ))}
                 </div>
-            }
+            )}
         </div>
     );
 }
