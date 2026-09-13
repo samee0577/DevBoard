@@ -93,7 +93,7 @@ export default function ProjectsList() {
                     Add New Project
                 </button>
             </Link>
-            <button className="buttonStyle" onClick={demoProject} style={{ padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
+            <button className="buttonStyle" onClick={demoProject} style={{ display:"none", padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
                 [demo button]
             </button>
 

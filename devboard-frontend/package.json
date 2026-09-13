@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@neondatabase/auth": "0.5.0-beta",
+    "@neondatabase/neon-js": "^0.7.0-beta",
     "@tanstack/react-query": "^5.101.4",
     "@vercel/analytics": "^2.0.1",
     "playwright": "^1.61.1",
@@ -26,7 +28,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.13.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -39,5 +41,6 @@
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
     "vitest": "^4.1.9"
-  }
+  },
+  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b"
 }

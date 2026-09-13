@@ -7,6 +7,7 @@ import { NewProject } from "./pages/NewProject"
 import ProjectDetail from "./pages/ProjectDetails"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
 import { Analytics } from '@vercel/analytics/react'
+import Auth from "./pages/Auth.tsx"
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <Auth />
+      },
+      {
+        path: '/dashboard',
         element: <Dashboard />
       },
       {
