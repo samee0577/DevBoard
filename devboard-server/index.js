@@ -2,10 +2,22 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import Pool from "pg-pool";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
 const app = express();
+
+app.disable("x-powered-by");
+
+// Security Headers Middleware
+app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    next();
+});
 
 const corsOptions = {
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -14,6 +26,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+const apiRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests, please try again later." }
+});
+
+app.use(apiRateLimiter);
 
 const port = process.env.PORT || 3001;
 
@@ -44,8 +66,9 @@ app.delete("/api/projects/delete/:projectId", async (req, res) => {
         const { projectId } = req.params;
         await client.query(`DELETE FROM projects WHERE id=$1;`, [projectId])
         res.status(200).json({ message: "Project deleted" })
-    } catch {
-        res.status(500).json({ error: error.message });
+    } catch (error) {
+        console.error("Error deleting project:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release()
@@ -70,7 +93,8 @@ app.delete("/api/projects/:projectId/features/:featureId", async (req, res) => {
         if (client) {
             await client.query("ROLLBACK");
         }
-        res.status(500).json({ error: error.message });
+        console.error("Error deleting feature:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -113,12 +137,14 @@ app.put("/api/projects/:projectId/features/:featureId", async (req, res) => {
 
         await client.query(`DELETE FROM tasks WHERE feature_id=$1;`, [featureId]);
 
-        for (const task of normalizedTasks) {
-            await client.query(
-                `INSERT INTO tasks (title, status, feature_id) VALUES ($1, $2, $3);`,
-                [task.title, task.status, featureId]
-            );
-        }
+        // Optimization: Batch insert tasks in a single query using unnest instead of a for-loop.
+        // Expected impact: Reduces database roundtrips from O(N) queries for N tasks to 1 query (O(1)).
+        const taskTitles = normalizedTasks.map(t => t.title);
+        const taskStatuses = normalizedTasks.map(t => t.status);
+        await client.query(
+            `INSERT INTO tasks (title, status, feature_id) SELECT unnest($1::text[]), unnest($2::boolean[]), $3;`,
+            [taskTitles, taskStatuses, featureId]
+        );
 
         await client.query(`UPDATE features SET status = (SELECT bool_and(status) FROM tasks WHERE feature_id = $1) WHERE id = $1;`, [featureId]);
 
@@ -138,7 +164,8 @@ app.put("/api/projects/:projectId/features/:featureId", async (req, res) => {
         if (client) {
             await client.query("ROLLBACK");
         }
-        res.status(500).json({ error: error.message });
+        console.error("Error updating feature:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -155,7 +182,8 @@ app.delete("/api/projects/features/:featureId/tasks/:taskId", async (req, res) =
         await client.query(`DELETE FROM tasks WHERE id=$1 AND feature_id=$2;`, [taskId, featureId]);
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error deleting task:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -172,7 +200,7 @@ app.get("/api/projects", async (req, res) => {
         res.json(result.rows);
     } catch (error) {
         console.error("Error fetching projects:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -194,12 +222,25 @@ app.get("/api/projects/:projectId", async (req, res) => {
         const featureResult = await client.query("SELECT * FROM features WHERE project_id=$1", [projectId]);
         const techStackResult = await client.query("SELECT * FROM tech_stack WHERE project_id=$1", [projectId]);
 
-        const featuresWithTasks = [];
+        // Optimization: Batch fetch all tasks for the project's features in a single query to solve N+1 database call bottleneck.
+        // Expected impact: Reduces database roundtrips from 3 + N queries down to 4 queries total.
+        const tasksResult = await client.query(
+            "SELECT tasks.* FROM tasks JOIN features ON tasks.feature_id = features.id WHERE features.project_id = $1",
+            [projectId]
+        );
 
-        for (const feature of featureResult.rows) {
-            const taskResult = await client.query("SELECT * FROM tasks WHERE feature_id=$1", [feature.id]);
-            featuresWithTasks.push({ ...feature, tasks: taskResult.rows });
+        const tasksByFeatureId = new Map();
+        for (const task of tasksResult.rows) {
+            if (!tasksByFeatureId.has(task.feature_id)) {
+                tasksByFeatureId.set(task.feature_id, []);
+            }
+            tasksByFeatureId.get(task.feature_id).push(task);
         }
+
+        const featuresWithTasks = featureResult.rows.map((feature) => ({
+            ...feature,
+            tasks: tasksByFeatureId.get(feature.id) || []
+        }));
 
         res.json({
             ...projectResult.rows[0],
@@ -208,7 +249,7 @@ app.get("/api/projects/:projectId", async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching project:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -232,8 +273,7 @@ app.get("/api/db-health", async (req, res) => {
         console.error("Database health check failed:", error);
         res.status(500).json({
             ok: false,
-            message: "Database connection failed",
-            error: error.message
+            message: "Database connection failed"
         });
     } finally {
         if (client) {
@@ -269,11 +309,13 @@ app.put("/api/projects/:projectId/features", async (req, res) => {
 
         res.json({ message: "Feature added successfully" });
     } catch (error) {
-        await client.query("rollback")
+        if (client) {
+            await client.query("rollback");
+        }
+        console.error("Error adding feature:", error);
         res.status(500).json({
             ok: false,
-            message: "Failed to add feature",
-            error: error.message
+            message: "Failed to add feature"
         });
     } finally {
         if (client) {
@@ -322,9 +364,11 @@ app.put("/api/projects", async (req, res) => {
         res.json({ message: "project edited successfully", projectId });
 
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.log(error.message)
-        res.status(500).json({ error: error.message });
+        if (client) {
+            await client.query('ROLLBACK');
+        }
+        console.error("Error editing project:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -357,24 +401,16 @@ app.put("/api/projects/toggleTask", async (req, res) => {
 
         await client.query(`UPDATE tasks SET status = $1 WHERE id = $2 returning *;`, [status, taskId]);
         await client.query(`UPDATE features SET status = (SELECT bool_and(status) FROM tasks WHERE feature_id = $1) WHERE id = $1;`, [featureId]);
-        // const result = await client.query(`SELECT 
-        //     COUNT(*) FILTER (WHERE tasks.status = true) AS completed,
-        //     COUNT(*) AS total
-        //     FROM tasks
-        //     JOIN features ON tasks.feature_id = features.id
-        //     WHERE features.project_id = $1;`, [projectId]);
-
-        // const percentage = result.rows[0].total > 0 ? (result.rows[0].completed / result.rows[0].total) * 100 : 0;
-
-        // await client.query(`UPDATE projects SET completion = $1 WHERE id = $2;`, [Math.round(percentage), projectId]);
 
         await client.query("COMMIT")
 
         res.json({ message: "task status toggled successfully" });
     } catch (error) {
-        await client.query('ROLLBACK');
+        if (client) {
+            await client.query('ROLLBACK');
+        }
         console.error("Error toggling task status:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Internal server error" });
     } finally {
         if (client) {
             client.release();
@@ -428,11 +464,15 @@ app.post("/api/projects", async (req, res) => {
         res.json({ message: "project added successfully", projectId });
 
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.log(error.message)
-        res.status(500).json({ error: error.message });
+        if (client) {
+            await client.query('ROLLBACK');
+        }
+        console.error("Error adding project:", error);
+        res.status(500).json({ error: "Internal server error" });
     } finally {
-        client.release()
+        if (client) {
+            client.release();
+        }
     }
 });
 

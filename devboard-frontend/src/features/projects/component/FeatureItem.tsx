@@ -19,7 +19,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
         onMutate: async (taskID: number) => {
             await client.cancelQueries({ queryKey: ["projects", String(ThisProjectId)] });
             const previousProject = client.getQueryData(["projects", String(ThisProjectId)]);
-            client.setQueryData(["projects", String(ThisProjectId)], (old: any) => {
+            client.setQueryData(["projects", String(ThisProjectId)], (old: { features: feature[]; completion: number } | undefined) => {
                 if (!old) return old;
 
                 const updatedFeatures = old.features.map((f: feature) => {
