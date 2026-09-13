@@ -250,6 +250,16 @@ input {
   margin-bottom: 15px;
   font-family: 'Chillax', sans-serif;
   font-weight: 400;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.buttonStyle:hover {
+  background-color: #f0f0f0;
+}
+
+.buttonStyle:active {
+  transform: scale(0.97);
+  background-color: #e5e5e5;
 }
 .feature-wrapper {
   border: 1px solid rgba(0, 0, 0, 0.754);
@@ -552,13 +562,26 @@ input {
 }
 
 
-.allButton{
+.allButton {
   margin-top: 10px;
   width: 100%;
   padding: 8px;
   font-size: 18px;
   border: 1px solid black;
   border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
+}
+
+.allButton:hover {
+  background-color: #f5f5f5;
+  border-color: #000;
+}
+
+.allButton:active {
+  transform: scale(0.98);
+  background-color: #e5e5e5;
 }
 
 .popup-overlay {
@@ -646,6 +669,11 @@ dialog.popup[open] {
   opacity: 0.85;
 }
 
+.popup-btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.95;
+}
+
 .popup-btn-secondary {
   flex: 1;
   padding: 10px;
@@ -657,20 +685,37 @@ dialog.popup[open] {
   font-weight: 400;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .popup-btn-secondary:hover {
   background-color: #f5f5f5;
 }
 
-.edit{
+.popup-btn-secondary:active {
+  transform: scale(0.97);
+  background-color: #e5e5e5;
+}
+
+.edit {
   margin-top: 10px;
   padding: 10px 25px;
   font-size: 18px;
   border: 1px solid black;
   border-radius: 10px;
   align-self: center;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.edit:hover {
+  background-color: #f5f5f5;
+}
+
+.edit:active {
+  transform: scale(0.96);
+  background-color: #e0e0e0;
 }
 
 .popup-tasks-container {
@@ -697,6 +742,11 @@ dialog.popup[open] {
 
 .popup-add-btn:hover {
   background-color: #f5f5f5;
+}
+
+.popup-add-btn:active {
+  transform: scale(0.97);
+  background-color: #e5e5e5;
 }
 
 /* Clean, borderless title input for the Feature Name */
@@ -733,6 +783,39 @@ dialog.popup[open] {
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
   vertical-align: middle;
+}
+
+.project-card {
+  padding: 15px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  border-color: #000;
+}
+
+.skeleton-card {
+  background-color: #fafafa;
+  pointer-events: none;
+}
+
+.skeleton-line {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-circle {
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
