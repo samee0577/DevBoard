@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { validateProject } from "../utils/validateProject";
+import type { NewProjectDraft } from "../utils/validateProject";
 
 const inputStyle = {
     padding: "8px",
@@ -8,9 +10,6 @@ const inputStyle = {
     border: "1px solid black",
     borderRadius: 8,
 };
-
-import { validateProject, type NewProjectDraft } from "./myFormValidation";
-export type { NewProjectDraft };
 
 export default function MyForm() {
 

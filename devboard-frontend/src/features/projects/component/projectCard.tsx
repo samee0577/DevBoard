@@ -85,14 +85,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
                 </div>
             </dialog>
 
-            <div style={{
-                padding: "15px",
-                margin: "5px",
-                border: "1px solid #ccc",
-                borderRadius: 10,
-                position: "relative",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
-            }}>
+            <div className="project-card">
 
                 {/* Three-Dot Menu Container */}
                 <div className="menuContainer" ref={menuRef}>

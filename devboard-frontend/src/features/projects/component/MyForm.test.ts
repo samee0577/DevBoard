@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateProject } from './myFormValidation';
-import type { NewProjectDraft } from './myFormValidation';
+import { validateProject } from '../utils/validateProject';
+import type { NewProjectDraft } from '../utils/validateProject';
 
 describe('MyForm Component unit testing', () => {
     it("returns true when a name is empty", () => {
