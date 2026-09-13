@@ -84,7 +84,6 @@ export default function MyForm() {
                 tasks: feature.tasks.filter(t => t.trim() !== "")
             }))
         };
-        console.log("project submitted: ",cleanedProject);
         mutate(cleanedProject);
     }
 
