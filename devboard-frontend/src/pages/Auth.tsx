@@ -42,8 +42,8 @@ export default function Auth() {
     e.preventDefault();
     setAuthError('');
 
-    if (!import.meta.env.VITE_NEON_AUTH_URL) {
-      setAuthError('Missing VITE_NEON_AUTH_URL in your frontend .env file.');
+    if (!import.meta.env.VITE_VITE_NEON_AUTH_URL) {
+      setAuthError('Missing VITE_VITE_NEON_AUTH_URL in your frontend .env file.');
       return;
     }
 
