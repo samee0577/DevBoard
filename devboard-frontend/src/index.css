@@ -15,6 +15,11 @@
   --success: #1e9d5a;
 }
 
+.root-layout {
+  margin-bottom: 10%;
+  padding: 2%
+}
+
 html,
 body {
   margin: 0;
@@ -229,18 +234,6 @@ input {
   font-weight: 600;
 }
 
-@media (max-width: 600px) {
-  .auth-card {
-    padding: 22px 18px;
-    border-radius: 18px;
-    box-shadow: 6px 6px 0 rgba(17, 17, 17, 1);
-  }
-
-  .auth-header h1 {
-    font-size: 2rem;
-  }
-}
-
 .buttonStyle {
   padding: 5px;
   border: 1px solid black;
@@ -261,6 +254,7 @@ input {
   transform: scale(0.97);
   background-color: #e5e5e5;
 }
+
 .feature-wrapper {
   border: 1px solid rgba(0, 0, 0, 0.754);
   border-radius: 8px;
@@ -268,6 +262,7 @@ input {
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
   transition: border ease, transform 0.4s ease-out, box-shadow 0.2s ease-out;
 }
+
 .feature-wrapper:hover {
   border: 1px solid rgb(0, 0, 0);
   transform: translateY(-1px);
@@ -281,6 +276,7 @@ input {
 .features {
   width: 100%;
   height: 100%;
+  min-height: 48px;
   padding: 15px;
   padding-left: 20px;
   padding-right: 45px;
@@ -292,7 +288,7 @@ input {
   font-family: 'Chillax', sans-serif;
   font-weight: 500;
   text-align: left;
-  font-size: 18px;
+  font-size: 15px;
   cursor: pointer;
 
   /* Fallback or default background */
@@ -342,18 +338,19 @@ input {
 
 .task-item {
   width: 100%;
+  min-height: 44px;
   padding: 10px 15px;
   border: 1px solid rgba(0, 0, 0, 0.85);
   border-radius: 4px;
   background-color: rgba(128, 128, 128, 0.15);
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  
+
   color: #000000;
   font-family: 'Chillax', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   text-align: left;
-  
+
   cursor: pointer;
   transition: border 0.1s ease-in-out, transform 0.02s ease-out;
 }
@@ -421,7 +418,7 @@ input {
   background-color: rgba(128, 128, 128, 0.15);
 }
 
-.stackList{
+.stackList {
   padding: 15px 20px;
   border: 3px solid black;
   border-radius: 10px;
@@ -430,12 +427,12 @@ input {
   margin-bottom: 15px;
   font-family: 'Chillax', sans-serif;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 14px;
   list-style-type: none;
-  cursor:not-allowed;
+  cursor: not-allowed;
   transition: background-color 0.5s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.2s ease-in-out;
-  text-align:center;
-  align-self:start;
+  text-align: center;
+  align-self: start;
   background-color: rgba(253, 253, 115, 0.393);
   max-height: auto;
   overflow: hidden;
@@ -443,12 +440,12 @@ input {
   white-space: nowrap;
 }
 
-.stackList:hover{
+.stackList:hover {
   box-shadow: -4px 4px 2px rgba(106, 255, 240, 0.8);
   transform: translateY(-5px);
 }
 
-.techStack-container{
+.techStack-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 8px;
@@ -460,7 +457,7 @@ input {
   right: 10px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   color: #999;
   padding: 5px;
@@ -470,7 +467,6 @@ input {
   align-items: center;
   justify-content: center;
   transition: color 0.2s, background-color 0.2s;
-  font-size: 24px;
   font-weight: 400;
 }
 
@@ -478,8 +474,6 @@ input {
   color: red;
   background-color: #a0a0a040;
 }
-
-/* Replace old .deleteButton rules with these: */
 
 .menuContainer {
   position: absolute;
@@ -491,11 +485,13 @@ input {
 .menuButton {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
   color: #666;
   width: 30px;
   height: 30px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -554,19 +550,11 @@ input {
   background-color: #fff5f5;
 }
 
-.project-grid-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px; /* Optional: Adds space between the two halves */
-  margin-top: 20px;
-}
-
-
 .allButton {
   margin-top: 10px;
   width: 100%;
   padding: 8px;
-  font-size: 18px;
+  font-size: 14px;
   border: 1px solid black;
   border-radius: 6px;
   background-color: white;
@@ -603,12 +591,15 @@ dialog.popup {
   border-radius: 12px;
   background: white;
   padding: 25px;
-  width: 100%;
-  max-width: 450px;
+  width: 92vw;
+  max-width: 92vw;
   margin: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   flex-direction: column;
-  gap: 15px; 
+  gap: 15px;
+  box-sizing: border-box;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 dialog.popup::backdrop {
@@ -620,11 +611,19 @@ dialog.popup[open] {
   display: flex;
 }
 
+@media (min-width: 600px) {
+  dialog.popup {
+    width: 100%;
+    max-width: 450px;
+    padding: 25px;
+  }
+}
+
 .popup h2 {
   margin: 0 0 5px 0;
   font-family: 'Chillax', sans-serif;
   font-weight: 600;
-  font-size: 22px;
+  font-size: clamp(1rem, 4vw, 1.15rem);
   color: black;
 }
 
@@ -634,7 +633,7 @@ dialog.popup[open] {
   padding: 12px;
   font-family: 'Chillax', sans-serif;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   border: 1px solid black;
   border-radius: 8px;
   outline: none;
@@ -653,6 +652,7 @@ dialog.popup[open] {
 
 .popup-btn-primary {
   flex: 2;
+  min-height: 44px;
   padding: 10px;
   background-color: black;
   color: white;
@@ -660,8 +660,11 @@ dialog.popup[open] {
   border-radius: 8px;
   font-family: 'Chillax', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.2s;
 }
 
@@ -676,6 +679,7 @@ dialog.popup[open] {
 
 .popup-btn-secondary {
   flex: 1;
+  min-height: 44px;
   padding: 10px;
   background-color: transparent;
   color: black;
@@ -683,8 +687,11 @@ dialog.popup[open] {
   border-radius: 8px;
   font-family: 'Chillax', sans-serif;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
@@ -700,7 +707,7 @@ dialog.popup[open] {
 .edit {
   margin-top: 10px;
   padding: 10px 25px;
-  font-size: 18px;
+  font-size: 14px;
   border: 1px solid black;
   border-radius: 10px;
   align-self: center;
@@ -721,7 +728,7 @@ dialog.popup[open] {
 .popup-tasks-container {
   display: flex;
   flex-direction: column;
-  margin:  10px 0 15px 0;
+  margin: 10px 0 15px 0;
   max-height: 220px; /* Prevents modal from breaking layout if you add too many tasks */
   overflow-y: auto;  /* Adds a clean scrollbar if needed */
   padding-right: 4px;
@@ -733,10 +740,14 @@ dialog.popup[open] {
   border: 1px dashed black; /* Dashed border looks killer with your brutalist theme */
   border-radius: 6px;
   padding: 8px 10px;
+  min-height: 44px;
   font-family: 'Chillax', sans-serif;
   font-weight: 400;
   font-size: 14px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.2s ease;
 }
 
@@ -756,7 +767,7 @@ dialog.popup[open] {
   padding: 8px 0;
   font-family: 'Chillax', sans-serif;
   font-weight: 500;
-  font-size: 22px; /* Bigger font so it acts like a header */
+  font-size: 18px;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -772,7 +783,7 @@ dialog.popup[open] {
 
 /* Optional: If you want a super subtle indication when typing */
 .popup-feature-input:focus {
-  border-bottom: 1px dashed #a0a0a0; 
+  border-bottom: 1px dashed #a0a0a0;
 }
 
 .skeleton-badge {
@@ -791,7 +802,7 @@ dialog.popup[open] {
   border: 1px solid #ccc;
   border-radius: 10px;
   position: relative;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -892,7 +903,6 @@ dialog.popup[open] {
   }
 }
 
-
 /* --- Dashboard & Grid Mobile-First Styles --- */
 .dashboard-grid {
   display: grid;
@@ -906,44 +916,37 @@ dialog.popup[open] {
   gap: 12px;
 }
 
-.menuButton {
-  min-width: 44px;
-  min-height: 44px;
-}
-
-
-/* --- Modals & Popups Mobile-First Styles --- */
-dialog.popup {
-  width: 92vw;
-  max-width: 92vw;
-  padding: 18px 16px;
-  box-sizing: border-box;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: 12px;
-}
-
-@media (min-width: 600px) {
-  dialog.popup {
-    width: 100%;
-    max-width: 450px;
-    padding: 25px;
+/* --- Small screen overrides --- */
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 22px 18px;
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 rgba(17, 17, 17, 1);
   }
-}
 
-.popup-btn-primary,
-.popup-btn-secondary,
-.popup-add-btn {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+  .auth-header h1 {
+    font-size: 2rem;
+  }
 
-.features {
-  min-height: 48px;
-}
+  .features {
+    font-size: 13.5px;
+  }
 
-.task-item {
-  min-height: 44px;
+  .stackList {
+    font-size: 13px;
+  }
+
+  .popup h2,
+  .popup-feature-input {
+    font-size: 16px;
+  }
+
+  .menuButton,
+  .deleteButton {
+    font-size: 18px;
+  }
+
+  .task-item {
+    font-size: 12.5px;
+  }
 }
