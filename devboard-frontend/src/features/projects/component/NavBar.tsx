@@ -15,7 +15,7 @@ export default function Navbar() {
                 <h1>DEVBOARD</h1>
             </div>
             <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-                <Link className="buttonStyle" to="/">Dashboard</Link>
+                <Link className="buttonStyle" to="/dashboard">Dashboard</Link>
                 <Link className="buttonStyle" to="/newProject">+ New Project</Link>
             </div>
             {isLoading ? (
