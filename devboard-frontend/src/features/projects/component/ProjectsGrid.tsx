@@ -98,7 +98,7 @@ export default function ProjectsList() {
             </button>
 
             {isLoading ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "15px" }}>
+                <div className="dashboard-grid">
                     {[1, 2, 3, 4, 5, 6].map((n) => (
                         <div key={n} className="project-card skeleton-card">
                             <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: "10px", marginBottom: "12px" }}>
@@ -111,7 +111,7 @@ export default function ProjectsList() {
                     ))}
                 </div>
             ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "15px" }}>
+                <div className="dashboard-grid">
                     {projectData?.map((project: projectType) => (
                         <ProjectCard
                             key={project.id}

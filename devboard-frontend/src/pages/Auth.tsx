@@ -9,7 +9,7 @@ type User = {
 
 export default function Auth() {
   const navigate = useNavigate();
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Record<string, unknown> | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

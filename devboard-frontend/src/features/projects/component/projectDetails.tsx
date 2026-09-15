@@ -271,8 +271,6 @@ export default function ProjectDetails() {
 
         addFeature(feature)
         setfeature({ title: "", tasks: [""] })
-        // toast.success("Feature added successfully")
-        // closeDialog()
     }
 
     function handleEdit() {
@@ -301,10 +299,10 @@ export default function ProjectDetails() {
     return (
         <>
             <div className="project-grid-container">
-                <div style={{ borderRight: "1px solid #999", paddingRight: "20px", marginRight: "10px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
-                            <h1 style={{ width: "auto" }}>{ThisProject.name}</h1>
+                <div className="project-details-main">
+                    <div className="project-header-row">
+                        <div className="project-title-group">
+                            <h1 className="project-title">{ThisProject.name}</h1>
                             <button className="edit" onClick={handleOpenEdit}>Edit</button>
 
                             <dialog ref={editDialogRef} className="popup" onClose={closeEditDialog} >
@@ -372,13 +370,12 @@ export default function ProjectDetails() {
                     <h2>Summary:</h2>{ThisProject.summary}
                     <StackList techStack={ThisProject.techStack} />
                 </div>
-                <div style={{ marginRight: "20px" }}>
+                <div className="project-details-features">
                     <FeatureList ThisProject={ThisProject} />
-                    <button className="allButton" style={{ marginTop: "10px", width: "100%" }} onClick={openDialog}>Add New feature</button>
+                    <button className="allButton" style={{ marginTop: "15px", width: "100%", minHeight: "44px" }} onClick={openDialog}>Add New feature</button>
                     <dialog ref={dialogRef} className="popup" onClose={closeDialog}>
                         <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleAddNew(feature) }}>
                             <h2>Add New Feature</h2>
-                            {/* Updated Wrapper Class for scrolling/spacing */}
                             <div className="popup-tasks-container">
                                 <input
                                     type="text"
@@ -388,9 +385,8 @@ export default function ProjectDetails() {
                                     onChange={(e) => setfeature({ ...feature, title: e.target.value })}
                                 />
 
-                                <div style={{ display: "flex", justifyContent: "space-between",alignItems:"center"}}>
-                                    <p style={{}}>Tasks:</p>
-                                    {/* Updated Button Class */}
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                                    <p style={{ fontWeight: 600 }}>Tasks:</p>
                                     <button
                                         type="button"
                                         className="popup-add-btn"
