@@ -281,7 +281,7 @@ export default function ProjectDetails() {
                     <div className="project-header-row">
                         <div className="project-title-group">
                             <h1 className="project-title">{ThisProject.name}</h1>
-                            <button className="edit" onClick={handleOpenEdit}>Edit</button>
+                            <button className="buttonStyle" onClick={handleOpenEdit}>Edit</button>
 
                             <dialog ref={editDialogRef} className="popup" onClose={closeEditDialog} >
                                 <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleEdit() }}>
