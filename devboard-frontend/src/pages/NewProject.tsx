@@ -4,7 +4,7 @@ export function NewProject() {
 
     return (
         <>
-            <h1>Create New Project</h1>
+            <h1 className="page-title">Create New Project</h1>
             <MyForm/>
         </>
     )

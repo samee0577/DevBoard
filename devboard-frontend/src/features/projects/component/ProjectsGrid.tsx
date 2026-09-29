@@ -85,12 +85,12 @@ export default function ProjectsList() {
 
     return (
         <div>
-            <h1>Projects</h1>
-            <Link to="/newProject">
+            <h1 className="page-title">Projects</h1>
+            {/* <Link to="/newProject">
                 <button className="buttonStyle" style={{ padding: "10px 15px", margin: "10px", cursor: "pointer", display: "inline-block" }}>
                     Add New Project
                 </button>
-            </Link>
+            </Link> */}
             <button className="buttonStyle" onClick={demoProject} style={{ display:"none", padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
                 [demo button]
             </button>

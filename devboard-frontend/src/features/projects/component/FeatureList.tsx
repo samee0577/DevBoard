@@ -5,7 +5,7 @@ import { FeatureItem } from "./FeatureItem";
 export default function FeatureList({ ThisProject }: { ThisProject: projectType }) {
     return (
         <>
-            <h2>Tasks:</h2>
+            <h2 className="section-title">Tasks:</h2>
             <div className="feature-list-grid">
                 {ThisProject?.features.map((feature) =>
                     <FeatureItem feature={feature} ThisProjectId={ThisProject.id} key={feature.id} />

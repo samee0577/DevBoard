@@ -7,7 +7,7 @@ interface StackListProps {
 export default function StackList({ techStack }: { techStack: StackListProps[] }) {
     return (
         <>
-            <h2>Tech Stack:</h2>
+            <h2 className="section-title">Tech Stack:</h2>
             <div className="tech-stack-grid">
                 {techStack.map((stack) => <li className="stackList" key={stack.id}>{stack.name}</li>)}
             </div>

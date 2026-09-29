@@ -114,7 +114,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
 
                 <Link to={`/projectDetail/${project.id}`} style={{ textDecoration: "none", color: "black" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: "10px", paddingRight: "20px" }}>
-                        <h2 style={{ margin: "0 0 10px 0", fontSize: "1.25rem" }}>{project.name}</h2>
+                        <h2 className="project-card-title">{project.name}</h2>
                         <MyProgress completion={project.completion} />
                     </div>
                     <p style={{ margin: 0, color: "#555" }}>summary: {project.summary}</p>

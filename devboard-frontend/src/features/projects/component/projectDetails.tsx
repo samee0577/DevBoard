@@ -344,8 +344,8 @@ export default function ProjectDetails() {
                         </div>
                         <MyProgress completion={ThisProject.completion} />
                     </div>
-                    <h2 style={{ marginTop: "0px", fontWeight: "400" }}>{ThisProject.domain}</h2>
-                    <h2>Summary:</h2>{ThisProject.summary}
+                    <h2 className="field-label">{ThisProject.domain}</h2>
+                    <h2 className="field-label">Summary:</h2>{ThisProject.summary}
                     <StackList techStack={ThisProject.techStack} />
                 </div>
                 <div className="project-details-features">

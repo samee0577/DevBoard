@@ -270,23 +270,26 @@ input {
 }
 
 .buttonStyle {
-  padding: 5px;
+  padding: 6px 10px;
   border: 1px solid black;
   border-radius: 8px;
   text-decoration: none;
+  text-transform: uppercase;
   color: black;
-  margin-bottom: 15px;
   font-family: 'Chillax', sans-serif;
-  font-weight: 400;
+  font-weight: 600;
   transition: background-color 0.2s ease, transform 0.1s ease;
+  font-size: 14px;
 }
 
 .buttonStyle:hover {
-  background-color: #f0f0f0;
+  background-color: #e7e7e7;
+  cursor: pointer;
+  transform: scale(1.01);
 }
 
 .buttonStyle:active {
-  transform: scale(0.97);
+  transform: scale(1);
   background-color: #e5e5e5;
 }
 
@@ -646,7 +649,7 @@ dialog.popup[open] {
   display: flex;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 601px) {
   dialog.popup {
     width: 100%;
     max-width: 450px;
@@ -1077,8 +1080,36 @@ dialog.popup[open] {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 5px;
 }
 
-.nav-links .buttonStyle {
-  margin-bottom: 10px;
+nav h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.page-title {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.section-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.field-label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.project-card-title {
+  margin: 0 0 10px 0;
+  font-size: 1.25rem;
+  line-height: 1.25;
 }
