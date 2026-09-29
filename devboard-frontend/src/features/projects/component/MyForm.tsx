@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { validateProject } from "../utils/validateProject";
 import type { NewProjectDraft } from "../utils/validateProject";
+import { api } from "../lib/api";
 
 const inputStyle = {
     padding: "8px",
@@ -17,16 +18,7 @@ export default function MyForm() {
 
     const { mutate, isPending } = useMutation({
         mutationFn: (newProject: NewProjectDraft) =>
-            fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
-                method: 'post',
-                headers: { "content-Type": "application/json" },
-                body: JSON.stringify(newProject)
-            }).then(res => {
-                if (!res.ok) {
-                    throw new Error(`API error: ${res.status}`);
-                }
-                return res.json();
-            }),
+            api.post("/api/projects", newProject),
         onMutate: () => {
             const id = toast.loading("Creating project...");
             return { toastId: id };

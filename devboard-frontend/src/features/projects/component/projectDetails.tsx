@@ -6,6 +6,7 @@ import { MyProgress } from "./ProgressBar"
 import { toast } from "react-toastify"
 import useDialog from "../hooks/useDialog"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { api } from "../lib/api"
 
 export default function ProjectDetails() {
 
@@ -33,12 +34,7 @@ export default function ProjectDetails() {
                     throw new Error("NETWORK_OFFLINE")
                 }
 
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}`)
-
-                if (!res.ok) {
-                    throw new Error(`Request failed with status ${res.status}`)
-                }
-                return res.json()
+                return await api.get(`/api/projects/${projectId}`)
             }
         }
     )
@@ -52,17 +48,7 @@ export default function ProjectDetails() {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
-                method: 'put',
-                headers: { "content-Type": "application/json" },
-                body: JSON.stringify(editProjectData)
-            })
-
-            if (!res.ok) {
-                throw new Error(`API error: ${res.status}`)
-            }
-
-            return res.json()
+            await api.put("/api/projects", editProjectData)
         },
         onMutate: () => {
             const id = toast.loading("Updating project...")
@@ -110,16 +96,7 @@ export default function ProjectDetails() {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}/features`, {
-                method: 'put',
-                headers: { "content-Type": "application/json" },
-                body: JSON.stringify(featureData)
-            })
-
-            if (!res.ok) {
-                throw new Error(`API error: ${res.status}`)
-            }
-            return res.json()
+            return await api.put(`/api/projects/${projectId}/features`, featureData)
         },
         onMutate: () => {
             const id = toast.loading("Adding feature...")

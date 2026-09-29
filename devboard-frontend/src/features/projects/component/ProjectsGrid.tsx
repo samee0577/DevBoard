@@ -1,7 +1,8 @@
 import ProjectCard from "./projectCard";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query"
+import { api } from "../lib/api";
 import type { projectType } from "../types/project";
 
 
@@ -30,7 +31,7 @@ export default function ProjectsList() {
                 if (!navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
                 }
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`).then(res => res.json())
+                const res = await api.get("/api/projects")
                 return res
             }
         }
@@ -44,19 +45,13 @@ export default function ProjectsList() {
 
     const demoProject = async () => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: "demo",
-                    completion: 0,
-                    domain: "testing",
-                    summary: "lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus, quibusdam.",
-                    techStack: ["react", "postgres", "claude"],
-                    features: [{ title: "hello world feature", tasks: ["testing demo task", "another demo task"] }]
-                })
+            await api.post("/api/projects", {
+                name: "demo",
+                completion: 0,
+                domain: "testing",
+                summary: "lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus, quibusdam.",
+                techStack: ["react", "postgres", "claude"],
+                features: [{ title: "hello world feature", tasks: ["testing demo task", "another demo task"] }]
             });
             window.location.reload();
         } catch (error) {

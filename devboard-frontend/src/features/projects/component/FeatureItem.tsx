@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import type { feature, task } from "../types/project";
 import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "../lib/api";
 
 
 export function FeatureItem({ feature, ThisProjectId }: { feature: feature; ThisProjectId: number; }) {
@@ -10,11 +11,12 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
     const client = useQueryClient();
     const { mutate: toggleTask, isPending } = useMutation({
         mutationFn: async (taskID: number) => {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/toggleTask`, {
-                method: "PUT",
-                headers: { "content-Type": "application/json" },
-                body: JSON.stringify({ status: !feature.tasks.find(task => task.id === taskID)?.status, taskId: taskID, featureId: feature.id, projectId: ThisProjectId })
-            }).then(res => res.json())
+            await api.put("/api/projects/toggleTask", {
+                status: !feature.tasks.find(task => task.id === taskID)?.status,
+                taskId: taskID,
+                featureId: feature.id,
+                projectId: ThisProjectId
+            })
         },
         onMutate: async (taskID: number) => {
             await client.cancelQueries({ queryKey: ["projects", String(ThisProjectId)] });
@@ -62,10 +64,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
 
     const { mutate: deleteFeature, isPending: isPendingDelete } = useMutation({
         mutationFn: async (featureId: number) => {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${ThisProjectId}/features/${featureId}`, {
-                method: "DELETE",
-                headers: { "content-Type": "application/json" }
-            }).then(res => res.json())
+            await api.delete(`/api/projects/${ThisProjectId}/features/${featureId}`)
         },
         onSuccess: () => {
             client.invalidateQueries({ queryKey: ["projects"] });
@@ -93,17 +92,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
 
     const { mutate: updateFeature, isPending: isPendingEdit } = useMutation({
         mutationFn: async (updatedFeature: { title: string; tasks: { title: string; status: boolean }[] }) => {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${ThisProjectId}/features/${feature.id}`, {
-                method: "PUT",
-                headers: { "content-Type": "application/json" },
-                body: JSON.stringify(updatedFeature)
-            });
-
-            if (!res.ok) {
-                throw new Error(`API error: ${res.status}`);
-            }
-
-            return res.json();
+            await api.put(`/api/projects/${ThisProjectId}/features/${feature.id}`, updatedFeature)
         },
         onSuccess: () => {
             client.invalidateQueries({ queryKey: ["projects"] });

@@ -3,7 +3,8 @@ import type { projectType } from "../types/project";
 import { MyProgress } from "./ProgressBar";
 import { useState, useRef, useEffect } from "react";
 import useDialog from "../hooks/useDialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { api } from "../lib/api";
 import { toast } from "react-toastify";
 
 export default function ProjectCard({ project }: { project: projectType }) {
@@ -12,9 +13,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
     const { mutate, isPending } = useMutation({
 
         mutationFn: async (projectId: number) => {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/projects/delete/${projectId}`, {
-                method: "DELETE"
-            }).then(res => res.json());
+            await api.delete(`/api/projects/delete/${projectId}`)
         },
         onSuccess: () => {
             toast.success("Project deleted successfully!");

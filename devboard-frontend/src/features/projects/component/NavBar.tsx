@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom"
 import "../../../index.css"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "../lib/api"
 
 export default function Navbar() {
 
     const { data: projects, isLoading } = useQuery({
         queryKey: ["projects"],
-        queryFn: async () => await fetch(`${import.meta.env.VITE_API_URL}/api/projects`).then(res => res.json())
+        queryFn: async () => await api.get("/api/projects")
     })
 
     return (
