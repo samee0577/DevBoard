@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Pool from "pg-pool";
 import rateLimit from "express-rate-limit";
+import { requireAuth, assertProjectOwner } from "./auth.js";
 
 dotenv.config();
 
@@ -37,6 +38,11 @@ const apiRateLimiter = rateLimit({
 
 app.use(apiRateLimiter);
 
+app.use("/api", (req, res, next) => {
+    if (req.path === "/db-health") return next();
+    return requireAuth(req, res, next);
+});
+
 const port = process.env.PORT || 3001;
 
 const { PGHOST,
@@ -44,7 +50,8 @@ const { PGHOST,
     PGUSER,
     PGPASSWORD,
     PGSSLMODE,
-    PGCHANNELBINDING } = process.env;
+    PGCHANNELBINDING,
+    NEON_AUTH_BASE_URL } = process.env;
 
 const pool = new Pool({
     database: PGDATABASE,
@@ -64,7 +71,11 @@ app.delete("/api/projects/delete/:projectId", async (req, res) => {
     try {
         client = await pool.connect();
         const { projectId } = req.params;
-        await client.query(`DELETE FROM projects WHERE id=$1;`, [projectId])
+        const userId = req.userId;
+        const result = await client.query(`DELETE FROM projects WHERE id=$1 AND user_id=$2;`, [projectId, userId])
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Project not found" });
+        }
         res.status(200).json({ message: "Project deleted" })
     } catch (error) {
         console.error("Error deleting project:", error);
@@ -82,6 +93,9 @@ app.delete("/api/projects/:projectId/features/:featureId", async (req, res) => {
     try {
         client = await pool.connect();
         const { projectId, featureId } = req.params;
+        const userId = req.userId;
+
+        await assertProjectOwner(client, projectId, userId);
 
         await client.query("BEGIN");
         await client.query(`DELETE FROM tasks WHERE feature_id=$1;`, [featureId]);
@@ -109,6 +123,9 @@ app.put("/api/projects/:projectId/features/:featureId", async (req, res) => {
         client = await pool.connect();
         const { projectId, featureId } = req.params;
         const { title, tasks } = req.body;
+        const userId = req.userId;
+
+        await assertProjectOwner(client, projectId, userId);
 
         if (!title || typeof title !== "string" || title.trim() === "") {
             return res.status(400).json({ error: "Feature title is required." });
@@ -178,8 +195,15 @@ app.delete("/api/projects/features/:featureId/tasks/:taskId", async (req, res) =
     let client;
     try {
         client = await pool.connect();
-        const { projectId, featureId, taskId } = req.params;
-        await client.query(`DELETE FROM tasks WHERE id=$1 AND feature_id=$2;`, [taskId, featureId]);
+        const { featureId, taskId } = req.params;
+        const userId = req.userId;
+        const result = await client.query(
+            `DELETE FROM tasks WHERE id=$1 AND feature_id=$2 AND feature_id IN (SELECT f.id FROM features f JOIN projects p ON p.id = f.project_id WHERE p.user_id=$3);`,
+            [taskId, featureId, userId]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Task not found" });
+        }
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {
         console.error("Error deleting task:", error);
@@ -196,7 +220,8 @@ app.get("/api/projects", async (req, res) => {
 
     try {
         client = await pool.connect();
-        const result = await client.query("SELECT * FROM projects");
+        const userId = req.userId;
+        const result = await client.query("SELECT * FROM projects WHERE user_id = $1", [userId]);
         res.json(result.rows);
     } catch (error) {
         console.error("Error fetching projects:", error);
@@ -212,10 +237,11 @@ app.get("/api/projects/:projectId", async (req, res) => {
     let client;
 
     const { projectId } = req.params;
+    const userId = req.userId;
 
     try {
         client = await pool.connect();
-        const projectResult = await client.query("SELECT * FROM projects WHERE id=$1", [projectId]);
+        const projectResult = await client.query("SELECT * FROM projects WHERE id=$1 AND user_id=$2", [projectId, userId]);
         if (projectResult.rows.length === 0) {
             return res.status(404).json({ error: "Project not found" });
         }
@@ -287,6 +313,7 @@ app.put("/api/projects/:projectId/features", async (req, res) => {
     let client;
     const { projectId } = req.params;
     const feature = req.body;
+    const userId = req.userId;
     if (!feature) {
         return res.status(400).json({ error: "Feature object is required." });
     }
@@ -300,6 +327,7 @@ app.put("/api/projects/:projectId/features", async (req, res) => {
     }
     try {
         client = await pool.connect();
+        await assertProjectOwner(client, projectId, userId);
         await client.query("BEGIN");
 
         const featureId = await client.query("insert into features (title, status, project_id) values ($1, $2, $3) returning id;", [feature.title, false, projectId]);
@@ -331,6 +359,7 @@ app.put("/api/projects", async (req, res) => {
     try {
         client = await pool.connect();
         const { name, summary, domain, techStack, projectId } = req.body;
+        const userId = req.userId;
         if (
             name === undefined || name === null ||
             summary === undefined || summary === null ||
@@ -340,6 +369,8 @@ app.put("/api/projects", async (req, res) => {
         ) {
             return res.status(400).json({ error: 'All fields must be provided in the request body.' });
         }
+
+        await assertProjectOwner(client, projectId, userId);
 
         await client.query("BEGIN")
 
@@ -385,6 +416,7 @@ app.put("/api/projects/toggleTask", async (req, res) => {
         client = await pool.connect();
 
         const { taskId, status, featureId, projectId } = req.body;
+        const userId = req.userId;
 
         const hasMissingField = [taskId, status, featureId, projectId].some(
             (value) => value === undefined || value === null || value === ''
@@ -396,6 +428,8 @@ app.put("/api/projects/toggleTask", async (req, res) => {
             });
             return;
         }
+
+        await assertProjectOwner(client, projectId, userId);
 
         await client.query("BEGIN")
 
@@ -426,6 +460,7 @@ app.post("/api/projects", async (req, res) => {
         client = await pool.connect();
         const { name, summary, domain, completion, techStack } = req.body;
         const { features } = req.body;
+        const userId = req.userId;
         if (name.trim() === '') return res.status(400).json({ error: 'fill the project name input' });
         if (summary.trim() === '') return res.status(400).json({ error: 'fill the project summary input' });
         if (domain.trim() === '') return res.status(400).json({ error: 'fill the project domain input' });
@@ -434,7 +469,7 @@ app.post("/api/projects", async (req, res) => {
 
         await client.query("BEGIN")
 
-        const projectResult = await client.query(`INSERT INTO projects (name, summary, domain, completion) VALUES ($1, $2, $3, $4) returning id;`, [name, summary, domain, completion]);
+        const projectResult = await client.query(`INSERT INTO projects (name, summary, domain, completion, user_id) VALUES ($1, $2, $3, $4, $5) returning id;`, [name, summary, domain, completion, userId]);
         const projectId = projectResult.rows[0].id;
 
         if (techStack.length > 0) {
