@@ -180,6 +180,41 @@ input {
   box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
 }
 
+.auth-field-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-field-control input {
+  padding-right: 72px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.auth-password-toggle:hover {
+  color: var(--text);
+  background: var(--panel-soft);
+}
+
+.auth-password-toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .auth-error {
   margin: 0;
   padding: 10px 12px;

@@ -13,6 +13,7 @@ export default function Auth() {
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(true);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState('');
@@ -124,19 +125,30 @@ export default function Auth() {
 
           <label className="auth-field">
             <span>Password</span>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="auth-field-control">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </label>
 
           {authError && <p className="auth-error">{authError}</p>}
 
           <button type="submit" className="auth-button auth-button--primary">
-            {isSignUp ? 'Sign Up' : 'Sign In'}
+            {isSignUp ? 'Sign Up' : 'LogIn'}
           </button>
         </form>
 
@@ -147,9 +159,9 @@ export default function Auth() {
               <button
                 type="button"
                 className="auth-link"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => { setIsSignUp(false); setShowPassword(false); }}
               >
-                Sign in
+                LogIn
               </button>
             </>
           ) : (
@@ -158,7 +170,7 @@ export default function Auth() {
               <button
                 type="button"
                 className="auth-link"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => { setIsSignUp(true); setShowPassword(false); }}
               >
                 Sign up
               </button>
