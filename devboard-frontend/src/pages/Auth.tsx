@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import authClient from '../auth';
 
 type User = {
@@ -9,6 +10,7 @@ type User = {
 
 export default function Auth() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Record<string, unknown> | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
@@ -88,9 +90,20 @@ export default function Auth() {
   };
 
   const handleSignOut = async () => {
-    await authClient.signOut();
+    try {
+      await authClient.signOut();
+    } catch (error) {
+      // The session is still live, so keep the cache: a different user must not
+      // be able to inherit this user's data if sign out did not actually happen.
+      setAuthError(error instanceof Error ? error.message : 'Sign out failed');
+      return;
+    }
+
     setSession(null);
     setUser(null);
+    // Drop every cached query so a later navigation as a different user can never
+    // read the previous user's projects straight out of the cache.
+    queryClient.clear();
   };
 
   if (loading) return <div className="auth-loading">Loading...</div>;
@@ -100,6 +113,7 @@ export default function Auth() {
       <div className="auth-shell auth-shell--logged-in">
         <div className="auth-card auth-card--simple">
           <h1>Logged in as {user?.email ?? 'User'}</h1>
+          {authError && <p className="auth-error">{authError}</p>}
           <button className="auth-button auth-button--primary" onClick={handleSignOut}>Sign Out</button>
         </div>
       </div>
