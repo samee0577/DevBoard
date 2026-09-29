@@ -903,6 +903,93 @@ dialog.popup[open] {
   }
 }
 
+/* --- New Project Form Mobile-First Styles --- */
+.new-project-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.new-project-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.new-project-label {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.new-project-col--tech {
+  height: fit-content;
+}
+
+.new-project-feature-card {
+  position: relative;
+  padding: 14px;
+  background-color: lightgray;
+  border-radius: 8px;
+}
+
+.new-project-feature-head {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.new-project-feature-title {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 10px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Chillax', sans-serif;
+  font-weight: 600;
+  font-size: clamp(18px, 5vw, 24px);
+}
+
+.new-project-task-row {
+  display: flex;
+  gap: 10px;
+  position: relative;
+}
+
+.new-project-submit {
+  margin-bottom: 20px;
+  padding: 10px;
+  min-height: 44px;
+}
+
+@media (min-width: 900px) {
+  .new-project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .new-project-col--details,
+  .new-project-col--tech {
+    border-right: 1px solid #ccc;
+    padding-right: 10px;
+  }
+
+  .new-project-label {
+    margin-top: 0;
+  }
+
+  .new-project-col--details .new-project-label {
+    margin-top: 10px;
+  }
+
+  .new-project-feature-card {
+    padding: 20px;
+  }
+}
+
 /* --- Dashboard & Grid Mobile-First Styles --- */
 .dashboard-grid {
   display: grid;

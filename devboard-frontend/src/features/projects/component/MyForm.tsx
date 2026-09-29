@@ -147,19 +147,19 @@ export default function MyForm() {
 
     return (
         <>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+            <div className="new-project-grid">
 
                 {/* Main Details Section */}
-                <div style={{ paddingRight: "10px", display: "flex", flexDirection: "column", gap: "10px", borderRight: '1px solid #ccc' }}>
-                    <label style={{ fontSize: "18px", marginTop: "10px" }}>Project Details</label>
+                <div className="new-project-col new-project-col--details">
+                    <label className="new-project-label">Project Details</label>
                     <input style={inputStyle} name="name" placeholder="Name" value={newProject.name} onChange={handleInputChange} />
                     <input style={inputStyle} name="domain" placeholder="Domain" value={newProject.domain} onChange={handleInputChange} />
                     <textarea style={{ ...inputStyle, height: "100px" }} name="summary" placeholder="Summary" value={newProject.summary} onChange={handleInputChange} />
                 </div>
 
                 {/* Tech Stack Section */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", height: "fit-content", borderRight: '1px solid #ccc', paddingRight: "10px" }}>
-                    <label style={{ fontSize: "18px" }}>Tech-Stack</label>
+                <div className="new-project-col new-project-col--tech">
+                    <label className="new-project-label">Tech-Stack</label>
                     {newProject.techStack.map((stack, index) => (
                         <div key={`tech-${index}`} style={{ position: "relative" }}>
                             <input
@@ -183,10 +183,10 @@ export default function MyForm() {
                 </div>
 
                 {/* Features Section */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <label style={{ fontSize: "18px" }}>Features</label>
+                <div className="new-project-col">
+                    <label className="new-project-label">Features</label>
                     {newProject.features.map((feature, index) => (
-                        <div key={`feature-${index}`} style={{ padding: "20px", backgroundColor: "lightgray", borderRadius: "8px", position: "relative" }}>
+                        <div key={`feature-${index}`} className="new-project-feature-card">
                             {newProject.features.length > 1 && (
                                 <button
                                     onClick={() => handleRemoveFeature(index)}
@@ -196,10 +196,10 @@ export default function MyForm() {
                                     &times;
                                 </button>
                             )}
-                            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+                            <div className="new-project-feature-head">
                                 <input
                                     value={feature.title}
-                                    style={{ marginBottom: "10px", border: "none", background: "transparent", outline: "none", fontSize: "24px", fontWeight: "600", width: "90%" }}
+                                    className="new-project-feature-title"
                                     placeholder="Feature Title"
                                     onChange={handleFeatureInput(index)}
                                 />
@@ -207,7 +207,7 @@ export default function MyForm() {
                             </div>
 
                             {feature.tasks.map((task, taskIndex) => (
-                                <div key={`task-${index}-${taskIndex}`} style={{ display: "flex", gap: "10px", position: "relative" }}>
+                                <div key={`task-${index}-${taskIndex}`} className="new-project-task-row">
                                     <input
                                         style={{ ...inputStyle, width: "100%", marginBottom: "5px" }}
                                         type="text"
@@ -235,8 +235,7 @@ export default function MyForm() {
             <ToastContainer position="bottom-left" autoClose={1000} />
             <button
                 onClick={handleSubmit}
-                className="allButton"
-                style={{ marginBottom: "20px", padding: "10px" }}
+                className="allButton new-project-submit"
                 disabled={isPending}
             >
                 {isPending ? "Creating project..." : "Create Project"}
