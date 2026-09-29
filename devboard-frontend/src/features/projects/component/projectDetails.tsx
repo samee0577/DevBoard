@@ -7,6 +7,7 @@ import { toast } from "react-toastify"
 import useDialog from "../hooks/useDialog"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api"
+import { invalidateProjects, projectKeys } from "../lib/queryKeys"
 
 export default function ProjectDetails() {
 
@@ -28,7 +29,7 @@ export default function ProjectDetails() {
 
     const { data: projectData, isLoading, error } = useQuery(
         {
-            queryKey: ["projects", projectId],
+            queryKey: projectKeys.detail(projectId!),
             queryFn: async () => {
                 if (!navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
@@ -55,7 +56,7 @@ export default function ProjectDetails() {
             return { toastId: id }
         },
         onSuccess: (_data, _variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] })
+            invalidateProjects(queryClient)
 
             if (context?.toastId) {
                 toast.update(context.toastId, {
@@ -103,7 +104,7 @@ export default function ProjectDetails() {
             return { toastId: id }
         },
         onSuccess: (_data, _variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] })
+            invalidateProjects(queryClient)
             closeDialog()
 
             if (context?.toastId) {

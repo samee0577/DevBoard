@@ -29,6 +29,11 @@ export type feature = {
 
 export type task = {
     id: number,
-    title: string
+    title: string,
     status: boolean
+}
+
+export type CreateProjectResponse = {
+    message: string,
+    projectId: number
 }

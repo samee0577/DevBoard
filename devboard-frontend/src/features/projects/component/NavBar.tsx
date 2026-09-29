@@ -1,23 +1,40 @@
 import { Link } from "react-router-dom"
 import "../../../index.css"
 import { useQuery } from "@tanstack/react-query"
+import { toast } from "react-toastify"
 import { api } from "../lib/api"
+import { projectKeys } from "../lib/queryKeys"
+import { useSignOut } from "../../../hooks/useSignOut"
 
 export default function Navbar() {
 
     const { data: projects, isLoading } = useQuery({
-        queryKey: ["projects"],
+        queryKey: projectKeys.list(),
         queryFn: async () => await api.get("/api/projects")
     })
+
+    const { handleSignOut, isSigningOut, error: signOutError } = useSignOut()
+
+    const onSignOut = async () => {
+        await handleSignOut()
+        if (signOutError) toast.error(signOutError)
+    }
 
     return (
         <nav>
             <div>
                 <h1>DEVBOARD</h1>
             </div>
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-                <Link className="buttonStyle" to="/dashboard">Dashboard</Link>
-                <Link className="buttonStyle" to="/newProject">+ New Project</Link>
+            <div className="nav-links">
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+                    <Link className="buttonStyle" to="/dashboard">Dashboard</Link>
+                    <Link className="buttonStyle" to="/newProject">+ New Project</Link>
+                </div>
+                <div>
+                    <button className="buttonStyle" type="button" onClick={onSignOut} disabled={isSigningOut}>
+                        {isSigningOut ? "Signing out..." : "Sign Out"}
+                    </button>
+                </div>
             </div>
             {isLoading ? (
                 <span>Total Projects: <span className="skeleton-badge"></span></span>

@@ -1,5 +1,4 @@
 import type { projectType } from "../types/project";
-import { ToastContainer } from "react-toastify";
 import "../../../index.css"
 import { FeatureItem } from "./FeatureItem";
 
@@ -12,7 +11,6 @@ export default function FeatureList({ ThisProject }: { ThisProject: projectType 
                     <FeatureItem feature={feature} ThisProjectId={ThisProject.id} key={feature.id} />
                 )}
             </div>
-            <ToastContainer />
         </>
     )
 }

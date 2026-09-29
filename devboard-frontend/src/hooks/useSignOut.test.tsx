@@ -1,23 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Auth from './Auth';
+import { useSignOut } from './useSignOut';
 import authClient from '../auth';
 
 vi.mock('../auth', () => ({
   default: {
-    getSession: vi.fn(),
     signOut: vi.fn(),
-    signUp: { email: vi.fn() },
-    signIn: { email: vi.fn() },
-    signInSocial: vi.fn(),
   },
 }));
 
-// Auth redirects to /dashboard as soon as a session exists, which unmounts the
-// sign-out button. Stub navigation so the sign-out handler can be exercised.
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
   return { ...actual, useNavigate: () => vi.fn() };
@@ -25,28 +18,23 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 const mockedAuthClient = vi.mocked(authClient);
 
-const signedIn = {
-  data: {
-    session: { token: 'a.jwt.token', userId: 'user-1' },
-    user: { id: 'user-1', email: 'someone@example.com' },
-  },
-};
-
-function renderAuth(queryClient: QueryClient) {
-  return render(
-    <MemoryRouter>
-      <QueryClientProvider client={queryClient}>
-        <Auth />
-      </QueryClientProvider>
-    </MemoryRouter>,
-  );
+function wrapper(queryClient: QueryClient) {
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </MemoryRouter>
+    );
+  };
 }
 
-describe('Auth sign out', () => {
+function renderSignOut(queryClient: QueryClient) {
+  return renderHook(() => useSignOut(), { wrapper: wrapper(queryClient) });
+}
+
+describe('useSignOut', () => {
   beforeEach(() => {
-    mockedAuthClient.getSession.mockReset();
     mockedAuthClient.signOut.mockReset();
-    mockedAuthClient.getSession.mockResolvedValue(signedIn as never);
     mockedAuthClient.signOut.mockResolvedValue(undefined as never);
   });
 
@@ -55,9 +43,11 @@ describe('Auth sign out', () => {
     queryClient.setQueryData(['projects'], [{ id: 1, name: 'private project' }]);
     queryClient.setQueryData(['projects', '1'], { id: 1, features: [] });
 
-    renderAuth(queryClient);
+    const { result } = renderSignOut(queryClient);
 
-    await userEvent.click(await screen.findByRole('button', { name: /sign out/i }));
+    await act(async () => {
+      await result.current.handleSignOut();
+    });
 
     await waitFor(() => {
       expect(queryClient.getQueryData(['projects'])).toBeUndefined();
@@ -71,31 +61,40 @@ describe('Auth sign out', () => {
 
     mockedAuthClient.signOut.mockRejectedValue(new Error('sign out failed') as never);
 
-    renderAuth(queryClient);
+    const { result } = renderSignOut(queryClient);
 
-    await userEvent.click(await screen.findByRole('button', { name: /sign out/i }));
+    await act(async () => {
+      await result.current.handleSignOut();
+    });
 
     expect(queryClient.getQueryData(['projects'])).toBeDefined();
   });
 
   it('surfaces the failure instead of silently doing nothing', async () => {
     const queryClient = new QueryClient();
+
     mockedAuthClient.signOut.mockRejectedValue(new Error('sign out failed') as never);
 
-    renderAuth(queryClient);
+    const { result } = renderSignOut(queryClient);
 
-    await userEvent.click(await screen.findByRole('button', { name: /sign out/i }));
+    await act(async () => {
+      await result.current.handleSignOut();
+    });
 
-    expect(await screen.findByText('sign out failed')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(result.current.error).toBe('sign out failed');
+    });
   });
 
   it('removes active observers so no in-flight query repopulates the cache', async () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(['projects'], [{ id: 1 }]);
 
-    renderAuth(queryClient);
+    const { result } = renderSignOut(queryClient);
 
-    await userEvent.click(await screen.findByRole('button', { name: /sign out/i }));
+    await act(async () => {
+      await result.current.handleSignOut();
+    });
 
     await waitFor(() => {
       expect(queryClient.getQueryCache().getAll()).toHaveLength(0);

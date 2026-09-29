@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import type { Id } from "react-toastify";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { validateProject } from "../utils/validateProject";
 import type { NewProjectDraft } from "../utils/validateProject";
+import type { CreateProjectResponse } from "../types/project";
 import { api } from "../lib/api";
-
+import { invalidateProjects } from "../lib/queryKeys";
 const inputStyle = {
     padding: "8px",
     fontSize: "18px",
@@ -15,16 +18,17 @@ const inputStyle = {
 export default function MyForm() {
 
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
-    const { mutate, isPending } = useMutation({
+    const { mutate, isPending } = useMutation<CreateProjectResponse, Error, NewProjectDraft, { toastId: Id }>({
         mutationFn: (newProject: NewProjectDraft) =>
             api.post("/api/projects", newProject),
         onMutate: () => {
             const id = toast.loading("Creating project...");
             return { toastId: id };
         },
-        onSuccess: (_data, _variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+        onSuccess: (data, _variables, context) => {
+            invalidateProjects(queryClient);
             toast.update(context.toastId, {
                 render: "Project created successfully!",
                 type: "success",
@@ -32,14 +36,7 @@ export default function MyForm() {
                 autoClose: 1000,
                 closeOnClick: true,
             });
-            setNewProject({
-                completion: 0,
-                name: "",
-                domain: "",
-                summary: "",
-                techStack: [""],
-                features: [{ title: "", tasks: [""] }]
-            });
+            navigate(data?.projectId ? `/projectDetail/${data.projectId}` : "/dashboard");
         },
         onError: (_error, _variables, context) => {
             if (context?.toastId) {
@@ -232,7 +229,6 @@ export default function MyForm() {
                 </div>
             </div>
 
-            <ToastContainer position="bottom-left" autoClose={1000} />
             <button
                 onClick={handleSubmit}
                 className="allButton new-project-submit"

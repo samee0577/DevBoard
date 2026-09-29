@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import type { feature, task } from "../types/project";
 import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { invalidateProjects, projectKeys } from "../lib/queryKeys";
 
 
 export function FeatureItem({ feature, ThisProjectId }: { feature: feature; ThisProjectId: number; }) {
@@ -19,9 +20,9 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
             })
         },
         onMutate: async (taskID: number) => {
-            await client.cancelQueries({ queryKey: ["projects", String(ThisProjectId)] });
-            const previousProject = client.getQueryData(["projects", String(ThisProjectId)]);
-            client.setQueryData(["projects", String(ThisProjectId)], (old: { features: feature[]; completion: number } | undefined) => {
+            await client.cancelQueries({ queryKey: projectKeys.detail(ThisProjectId) });
+            const previousProject = client.getQueryData(projectKeys.detail(ThisProjectId));
+            client.setQueryData(projectKeys.detail(ThisProjectId), (old: { features: feature[]; completion: number } | undefined) => {
                 if (!old) return old;
 
                 const updatedFeatures = old.features.map((f: feature) => {
@@ -53,12 +54,12 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
         },
         onError: (_err, _taskId, context) => {
             if (context?.previousProject) {
-                client.setQueryData(["projects", String(ThisProjectId)], context.previousProject);
+                client.setQueryData(projectKeys.detail(ThisProjectId), context.previousProject);
             };
             toast.error("Error toggling task status");
         },
         onSettled() {
-            client.invalidateQueries({ queryKey: ["projects", String(ThisProjectId)] })
+            invalidateProjects(client)
         },
     })
 
@@ -67,7 +68,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
             await api.delete(`/api/projects/${ThisProjectId}/features/${featureId}`)
         },
         onSuccess: () => {
-            client.invalidateQueries({ queryKey: ["projects"] });
+            invalidateProjects(client);
             toast.success("Feature deleted successfully",
                 {
                     position: "bottom-right",
@@ -95,7 +96,7 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
             await api.put(`/api/projects/${ThisProjectId}/features/${feature.id}`, updatedFeature)
         },
         onSuccess: () => {
-            client.invalidateQueries({ queryKey: ["projects"] });
+            invalidateProjects(client);
             toast.success("Feature updated successfully", {
                 position: "bottom-right",
                 autoClose: 2000,
@@ -321,7 +322,6 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
                     </button>
                 </div>
             </dialog>
-            <ToastContainer />
         </div>
     );
 }

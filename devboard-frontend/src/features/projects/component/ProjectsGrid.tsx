@@ -1,8 +1,9 @@
 import ProjectCard from "./projectCard";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api";
+import { invalidateProjects, projectKeys } from "../lib/queryKeys";
 import type { projectType } from "../types/project";
 
 
@@ -24,9 +25,11 @@ export default function ProjectsList() {
     }, [])
 
 
+    const queryClient = useQueryClient()
+
     const { data: projectData, isLoading, error } = useQuery(
         {
-            queryKey: ["projects"],
+            queryKey: projectKeys.list(),
             queryFn: async () => {
                 if (!navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
@@ -53,7 +56,7 @@ export default function ProjectsList() {
                 techStack: ["react", "postgres", "claude"],
                 features: [{ title: "hello world feature", tasks: ["testing demo task", "another demo task"] }]
             });
-            window.location.reload();
+            await invalidateProjects(queryClient);
         } catch (error) {
             console.error("Error creating demo project:", error);
         }

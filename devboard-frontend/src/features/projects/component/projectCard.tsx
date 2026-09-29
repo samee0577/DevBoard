@@ -6,6 +6,7 @@ import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api";
 import { toast } from "react-toastify";
+import { invalidateProjects } from "../lib/queryKeys";
 
 export default function ProjectCard({ project }: { project: projectType }) {
 
@@ -17,7 +18,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
         },
         onSuccess: () => {
             toast.success("Project deleted successfully!");
-            queryClient.invalidateQueries({ queryKey: ["projects"] })
+            invalidateProjects(queryClient)
             closeDialog();
         },
         onError: (error: unknown) => {
