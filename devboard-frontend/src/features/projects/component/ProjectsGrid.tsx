@@ -1,6 +1,5 @@
 import ProjectCard from "./projectCard";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api";
 import { invalidateProjects, projectKeys } from "../lib/queryKeys";
@@ -86,11 +85,6 @@ export default function ProjectsList() {
     return (
         <div>
             <h1 className="page-title">Projects</h1>
-            {/* <Link to="/newProject">
-                <button className="buttonStyle" style={{ padding: "10px 15px", margin: "10px", cursor: "pointer", display: "inline-block" }}>
-                    Add New Project
-                </button>
-            </Link> */}
             <button className="buttonStyle" onClick={demoProject} style={{ display:"none", padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
                 [demo button]
             </button>
