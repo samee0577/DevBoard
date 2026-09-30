@@ -165,6 +165,12 @@ export default function ProjectDetails() {
         tasks: string[]
     }
     const [feature, setfeature] = useState<featureInterface>({ title: "", tasks: [""] })
+    // Field-level validation state for the "Add New Feature" dialog. The task
+    // fields are tracked by index so each empty input can be highlighted on its
+    // own instead of relying on a single transient toast.
+    const [titleError, setTitleError] = useState<string | null>(null)
+    const [errorTaskIndexes, setErrorTaskIndexes] = useState<number[]>([])
+    const [taskError, setTaskError] = useState<string | null>(null)
     const [editProject, setEditProject] = useState<editProjectType>({
         name: "",
         summary: "",
@@ -236,26 +242,55 @@ export default function ProjectDetails() {
         setEditProject({ ...editProject, techStack: newTechStack })
     }
 
+    function resetFeatureForm() {
+        setfeature({ title: "", tasks: [""] })
+        setTitleError(null)
+        setErrorTaskIndexes([])
+        setTaskError(null)
+    }
+
     function handleAddNew(feature: featureInterface) {
         if (ThisProject === undefined) return
 
-        if (feature.title.trim() === '') {
-            toast.error("Please enter a feature name")
+        const cleanedTitle = feature.title.trim()
+        const trimmedTasks = feature.tasks.map((task) => task.trim())
+        // Indexes of inputs the user left blank, so only the offending fields
+        // get highlighted instead of the whole list.
+        const emptyIndexes = trimmedTasks
+            .map((task, index) => (task === "" ? index : -1))
+            .filter((index) => index !== -1)
+        const cleanedTasks = trimmedTasks.filter((task) => task !== "")
+
+        if (cleanedTitle === "") {
+            setTitleError("Please enter a feature name")
+            setErrorTaskIndexes([])
+            setTaskError(null)
+            return
+        }
+        setTitleError(null)
+
+        if (cleanedTasks.length === 0) {
+            setErrorTaskIndexes(feature.tasks.map((_, index) => index))
+            setTaskError("Please add at least one task")
             return
         }
 
-        if (feature.tasks.length === 0) {
-            toast.error("Please add at least one task")
+        if (emptyIndexes.length > 0) {
+            setErrorTaskIndexes(emptyIndexes)
+            setTaskError("Remove the empty task fields or fill them in")
             return
         }
+
+        setErrorTaskIndexes([])
+        setTaskError(null)
 
         if (!navigator.onLine) {
             toast.error("No network connection. Please check your internet connection and try again.")
             return
         }
 
-        addFeature(feature)
-        setfeature({ title: "", tasks: [""] })
+        addFeature({ title: cleanedTitle, tasks: cleanedTasks })
+        resetFeatureForm()
     }
 
     function handleEdit() {
@@ -358,17 +393,23 @@ export default function ProjectDetails() {
                 <div className="project-details-features">
                     <FeatureList ThisProject={ThisProject} toggleQueue={toggleQueue} />
                     <button className="allButton" style={{ marginTop: "15px", width: "100%", minHeight: "44px" }} onClick={openDialog}>Add New feature</button>
-                    <dialog ref={dialogRef} className="popup" onClose={closeDialog}>
-                        <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleAddNew(feature) }}>
+                    <dialog ref={dialogRef} className="popup" onClose={() => { resetFeatureForm(); closeDialog(); }}>
+                        <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleAddNew(feature) }} noValidate>
                             <h2>Add New Feature</h2>
                             <div className="popup-tasks-container">
                                 <input
                                     type="text"
                                     value={feature.title}
-                                    className="popup-feature-input"
+                                    className={`popup-feature-input${titleError ? " invalid" : ""}`}
                                     placeholder="Enter feature name"
-                                    onChange={(e) => setfeature({ ...feature, title: e.target.value })}
+                                    aria-invalid={titleError ? true : undefined}
+                                    aria-label="Feature name"
+                                    onChange={(e) => {
+                                        setfeature({ ...feature, title: e.target.value })
+                                        if (titleError && e.target.value.trim() !== "") setTitleError(null)
+                                    }}
                                 />
+                                {titleError && <p className="popup-error-text" role="alert">{titleError}</p>}
 
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                                     <p style={{ fontWeight: 600 }}>Tasks:</p>
@@ -381,28 +422,58 @@ export default function ProjectDetails() {
                                     </button>
                                 </div>
                                 {
-                                    feature.tasks.map((_, index) => (
-                                        <input
-                                            key={index}
-                                            type="text"
-                                            value={feature.tasks[index]}
-                                            className="popup-input"
-                                            placeholder={`Enter Task #${index + 1}`}
-                                            onChange={(e) => {
-                                                const updatedTasks = [...feature.tasks];
-                                                updatedTasks[index] = e.target.value;
-                                                setfeature({ ...feature, tasks: updatedTasks });
-                                            }}
-                                        />
-                                    ))
+                                    feature.tasks.map((_, index) => {
+                                        const isErrored = errorTaskIndexes.includes(index)
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="popup-task-row"
+                                                data-invalid={isErrored ? "true" : undefined}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    value={feature.tasks[index]}
+                                                    className={`popup-input${isErrored ? " invalid" : ""}`}
+                                                    placeholder={`Enter Task #${index + 1}`}
+                                                    aria-invalid={isErrored ? true : undefined}
+                                                    aria-label={`Task ${index + 1}`}
+                                                    onChange={(e) => {
+                                                        const updatedTasks = [...feature.tasks];
+                                                        updatedTasks[index] = e.target.value;
+                                                        setfeature({ ...feature, tasks: updatedTasks });
+                                                        if (isErrored) {
+                                                            const filled = updatedTasks.map((task, i) => task.trim() === "" ? -1 : i).filter((i) => i !== -1)
+                                                            setErrorTaskIndexes(filled)
+                                                            if (filled.length > 0) setTaskError(null)
+                                                        }
+                                                    }}
+                                                />
+                                                {feature.tasks.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        className="task-remove-button"
+                                                        onClick={() => {
+                                                            setfeature({ ...feature, tasks: feature.tasks.filter((_, taskIndex) => taskIndex !== index) })
+                                                            setErrorTaskIndexes([])
+                                                            setTaskError(null)
+                                                        }}
+                                                        aria-label={`Remove task ${index + 1}`}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )
+                                    })
                                 }
+                                {taskError && <p className="popup-error-text" role="alert">{taskError}</p>}
                             </div>
 
                             <div className="popup-actions">
-                                <button className="popup-btn-primary" type="submit">
+                                <button className="popup-btn-primary" type="submit" disabled={addFeaturePending}>
                                     {addFeaturePending ? "Adding..." : "Add feature"}
                                 </button>
-                                <button className="popup-btn-secondary" type="button" onClick={closeDialog}>
+                                <button className="popup-btn-secondary" type="button" onClick={resetFeatureForm}>
                                     Close
                                 </button>
                             </div>

@@ -356,6 +356,11 @@ app.put("/api/projects/:projectId/features", async (req, res) => {
     if (!Array.isArray(feature.tasks) || feature.tasks.length === 0) {
         return res.status(400).json({ error: "Feature tasks must be a non-empty array." });
     }
+
+    // Reject blank rows outright instead of persisting an empty task title.
+    if (feature.tasks.some((task) => typeof task !== "string" || task.trim() === "")) {
+        return res.status(400).json({ error: "Feature tasks cannot be empty." });
+    }
     try {
         client = await pool.connect();
         await assertProjectOwner(client, projectId, userId);
