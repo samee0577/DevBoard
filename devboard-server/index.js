@@ -491,6 +491,23 @@ app.put("/api/projects/toggleTask", async (req, res) => {
             [ownedFeatureId]
         );
 
+        // Recompute the denormalised project completion here too, matching the
+        // feature-update route. Without it the stored column goes stale on every task
+        // toggle and the dashboard's SELECT * FROM projects reads the wrong value.
+        // The frontend also re-derives completion on read, so this is defence in depth.
+        await client.query(
+            `UPDATE projects SET completion = COALESCE((
+                SELECT ROUND(
+                    (COUNT(*) FILTER (WHERE tasks.status = true))::numeric
+                    * 100 / NULLIF(COUNT(*), 0)
+                )
+                FROM tasks
+                JOIN features ON tasks.feature_id = features.id
+                WHERE features.project_id = $1
+            ), 0) WHERE id = $1;`,
+            [projectId]
+        );
+
         await client.query("COMMIT")
 
         res.json({ message: "task status toggled successfully" });

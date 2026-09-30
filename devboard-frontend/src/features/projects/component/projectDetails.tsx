@@ -8,11 +8,15 @@ import useDialog from "../hooks/useDialog"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api"
 import { invalidateProjects, projectKeys } from "../lib/queryKeys"
+import { deriveProject } from "../lib/applyTaskToggle"
+import { useTaskToggleQueue } from "../hooks/useTaskToggle"
+import type { projectType } from "../types/project"
 
 export default function ProjectDetails() {
 
     const { projectId } = useParams()
     const [isOffline, setIsOffline] = useState<boolean>(() => !navigator.onLine)
+    const toggleQueue = useTaskToggleQueue()
 
     useEffect(() => {
         const handleOnline = () => setIsOffline(false)
@@ -30,12 +34,18 @@ export default function ProjectDetails() {
     const { data: projectData, isLoading, error } = useQuery(
         {
             queryKey: projectKeys.detail(projectId!),
+            // With the default staleTime of 0, refetchOnWindowFocus can replace the
+            // cache mid-toggle. A short staleTime keeps focus refetches from yanking
+            // state out from under an in-flight optimistic write.
+            staleTime: 30_000,
             queryFn: async () => {
                 if (!navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
                 }
 
-                return await api.get(`/api/projects/${projectId}`)
+                // Re-derive the stored aggregates on the way in, so a stale
+                // completion or feature status in the database never reaches the UI.
+                return deriveProject(await api.get(`/api/projects/${projectId}`) as projectType)
             }
         }
     )
@@ -149,7 +159,6 @@ export default function ProjectDetails() {
         domain: string,
         techStack: string[],
         completion: number,
-        features: string[]
     }
     interface featureInterface {
         title: string,
@@ -162,7 +171,6 @@ export default function ProjectDetails() {
         domain: "",
         techStack: [],
         completion: 0,
-        features: [],
     });
 
     const { dialogRef, openDialog, closeDialog } = useDialog();
@@ -208,7 +216,6 @@ export default function ProjectDetails() {
             domain: ThisProject.domain,
             techStack: ThisProject.techStack.map((s: { name: string }) => { return s.name }),
             completion: ThisProject.completion,
-            features: ThisProject.features,
         })
         openEditDialog()
     }
@@ -349,7 +356,7 @@ export default function ProjectDetails() {
                     <StackList techStack={ThisProject.techStack} />
                 </div>
                 <div className="project-details-features">
-                    <FeatureList ThisProject={ThisProject} />
+                    <FeatureList ThisProject={ThisProject} toggleQueue={toggleQueue} />
                     <button className="allButton" style={{ marginTop: "15px", width: "100%", minHeight: "44px" }} onClick={openDialog}>Add New feature</button>
                     <dialog ref={dialogRef} className="popup" onClose={closeDialog}>
                         <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleAddNew(feature) }}>

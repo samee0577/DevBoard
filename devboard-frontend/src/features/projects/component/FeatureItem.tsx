@@ -1,67 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import type { feature, task } from "../types/project";
+import type { feature } from "../types/project";
 import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import { invalidateProjects, projectKeys } from "../lib/queryKeys";
+import { invalidateProjects } from "../lib/queryKeys";
+import { TaskToggleButton } from "./TaskToggleButton";
+import type { TaskToggleQueue } from "../hooks/useTaskToggle";
 
 
-export function FeatureItem({ feature, ThisProjectId }: { feature: feature; ThisProjectId: number; }) {
+export function FeatureItem({ feature, ThisProjectId, toggleQueue }: { feature: feature; ThisProjectId: number; toggleQueue: TaskToggleQueue; }) {
 
     const client = useQueryClient();
-    const { mutate: toggleTask, isPending } = useMutation({
-        mutationFn: async (taskID: number) => {
-            await api.put("/api/projects/toggleTask", {
-                status: !feature.tasks.find(task => task.id === taskID)?.status,
-                taskId: taskID,
-                featureId: feature.id,
-                projectId: ThisProjectId
-            })
-        },
-        onMutate: async (taskID: number) => {
-            await client.cancelQueries({ queryKey: projectKeys.detail(ThisProjectId) });
-            const previousProject = client.getQueryData(projectKeys.detail(ThisProjectId));
-            client.setQueryData(projectKeys.detail(ThisProjectId), (old: { features: feature[]; completion: number } | undefined) => {
-                if (!old) return old;
-
-                const updatedFeatures = old.features.map((f: feature) => {
-                    if (f.id !== feature.id) return f;
-
-                    const updatedTasks = f.tasks.map((t: task) =>
-                        t.id === taskID ? { ...t, status: !t.status } : t
-                    );
-
-                    return {
-                        ...f,
-                        tasks: updatedTasks,
-                        status: updatedTasks.every((t: task) => t.status)
-                    };
-                });
-
-                const allTasks = updatedFeatures.flatMap((f: feature) => f.tasks);
-                const total = allTasks.length;
-                const completed = allTasks.filter((t: task) => t.status).length;
-                const completion = total === 0 ? 0 : Math.round((completed / total) * 100);
-
-                return {
-                    ...old,
-                    features: updatedFeatures,
-                    completion: completion,
-                };
-            })
-            return { previousProject };
-        },
-        onError: (_err, _taskId, context) => {
-            if (context?.previousProject) {
-                client.setQueryData(projectKeys.detail(ThisProjectId), context.previousProject);
-            };
-            toast.error("Error toggling task status");
-        },
-        onSettled() {
-            invalidateProjects(client)
-        },
-    })
 
     const { mutate: deleteFeature, isPending: isPendingDelete } = useMutation({
         mutationFn: async (featureId: number) => {
@@ -116,10 +66,6 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
             toast.error("Error updating feature");
         }
     })
-
-    function handleToggle(taskId: number) {
-        toggleTask(taskId)
-    }
 
     function handleDeleteClick(featureId: number) {
         deleteFeature(featureId);
@@ -230,13 +176,14 @@ export function FeatureItem({ feature, ThisProjectId }: { feature: feature; This
                     <div className={`tasks-container ${isExpanded ? "open" : ""}`}>
                         {feature.tasks.map((task) => (
                             <div key={task.id} className="task-item-wrapper">
-                                <button
-                                    className="task-item"
-                                    data-status={task.status ? "true" : "false"}
-                                    onClick={() => handleToggle(task.id)}
-                                    disabled={isPending}>
-                                    {task.title}
-                                </button>
+                                <TaskToggleButton
+                                    taskId={task.id}
+                                    title={task.title}
+                                    status={task.status}
+                                    featureId={feature.id}
+                                    projectId={ThisProjectId}
+                                    toggleQueue={toggleQueue}
+                                />
                             </div>
                         ))}
                     </div>
