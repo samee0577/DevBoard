@@ -88,9 +88,6 @@ export default function ProjectCard({ project }: { project: projectType }) {
 
             <div className="project-card">
 
-                {/* Sandbox-only marker. Gated on the gateway rather than a route check so
-                    the same component can be reused if demo data ever moves elsewhere,
-                    and so a real user's projects can never pick this up. */}
                 {gateway.isSandbox && (
                     <span className="projectCard-badge">Demo</span>
                 )}
@@ -121,9 +118,9 @@ export default function ProjectCard({ project }: { project: projectType }) {
                 </div>
 
                 <Link to={gateway.detailHref(project.id)} style={{ textDecoration: "none", color: "black" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: "10px", paddingRight: "20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingRight: "20px" , marginBottom: "10px"}}>
                         <h2 className="project-card-title">{project.name}</h2>
-                        <MyProgress completion={project.completion} />
+                        <MyProgress style={{height: "45px", width: "45px"}}completion={project.completion} />
                     </div>
                     <p style={{ margin: 0, color: "#555" }}>summary: {project.summary}</p>
                 </Link>

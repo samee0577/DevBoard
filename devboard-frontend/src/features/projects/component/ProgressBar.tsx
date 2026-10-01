@@ -1,10 +1,10 @@
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
-export const MyProgress = ({ completion }: { completion: number }) => {
+export const MyProgress = ({ completion , style }: { completion: number; style?: React.CSSProperties }) => {
     
     return (
-        <div style={{ width: 60, height: 60, margin: "5px" ,fontWeight: '600' }}>
+        <div style={{ width: 60, height: 60, margin: "5px" ,fontWeight: '500', ...style }}>
             <CircularProgressbar
                 value={completion}
                 counterClockwise
