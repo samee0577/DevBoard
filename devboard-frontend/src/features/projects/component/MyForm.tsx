@@ -8,12 +8,6 @@ import type { NewProjectDraft } from "../utils/validateProject";
 import type { CreateProjectResponse } from "../types/project";
 import { api } from "../lib/api";
 import { invalidateProjects } from "../lib/queryKeys";
-const inputStyle = {
-    padding: "8px",
-    fontSize: "18px",
-    border: "1px solid black",
-    borderRadius: 8,
-};
 
 export default function MyForm() {
 
@@ -149,27 +143,26 @@ export default function MyForm() {
                 {/* Main Details Section */}
                 <div className="new-project-col new-project-col--details">
                     <label className="new-project-label">Project Details</label>
-                    <input style={inputStyle} name="name" placeholder="Name" value={newProject.name} onChange={handleInputChange} />
-                    <input style={inputStyle} name="domain" placeholder="Domain" value={newProject.domain} onChange={handleInputChange} />
-                    <textarea style={{ ...inputStyle, height: "100px" }} name="summary" placeholder="Summary" value={newProject.summary} onChange={handleInputChange} />
+                    <input className="new-project-input" name="name" placeholder="Name" value={newProject.name} onChange={handleInputChange} />
+                    <input className="new-project-input" name="domain" placeholder="Domain" value={newProject.domain} onChange={handleInputChange} />
+                    <textarea className="new-project-input new-project-input--summary" name="summary" placeholder="Summary" value={newProject.summary} onChange={handleInputChange} />
                 </div>
 
                 {/* Tech Stack Section */}
                 <div className="new-project-col new-project-col--tech">
                     <label className="new-project-label">Tech-Stack</label>
                     {newProject.techStack.map((stack, index) => (
-                        <div key={`tech-${index}`} style={{ position: "relative" }}>
+                        <div key={`tech-${index}`} className="new-project-tech-row">
                             <input
                                 value={stack}
                                 onChange={handleTechInput(index)}
-                                style={{ ...inputStyle, width: "100%" }}
+                                className="new-project-input new-project-input--full"
                                 placeholder="e.g. React"
                             />
                             {newProject.techStack.length > 1 && (
                                 <button
                                     onClick={() => handleRemoveTech(index)}
-                                    className="deleteButton"
-                                    style={{ position: "absolute", top: "50%", right: "5px", transform: "translateY(-50%)", border: "none", cursor: "pointer" }}
+                                    className="deleteButton new-project-remove"
                                 >
                                     &times;
                                 </button>
@@ -187,8 +180,7 @@ export default function MyForm() {
                             {newProject.features.length > 1 && (
                                 <button
                                     onClick={() => handleRemoveFeature(index)}
-                                    className="deleteButton"
-                                    style={{ position: "absolute", top: "5px", right: "5px", border: "none", cursor: "pointer" }}
+                                    className="deleteButton new-project-remove-feature"
                                 >
                                     &times;
                                 </button>
@@ -200,13 +192,13 @@ export default function MyForm() {
                                     placeholder="Feature Title"
                                     onChange={handleFeatureInput(index)}
                                 />
-                                <button type="button" onClick={() => addNewTask(index)} style={{ fontSize: "18px", borderRadius: "5px" }}>+</button>
+                                <button type="button" onClick={() => addNewTask(index)} className="new-project-add-task">+</button>
                             </div>
 
                             {feature.tasks.map((task, taskIndex) => (
                                 <div key={`task-${index}-${taskIndex}`} className="new-project-task-row">
                                     <input
-                                        style={{ ...inputStyle, width: "100%", marginBottom: "5px" }}
+                                        className="new-project-input new-project-input--task"
                                         type="text"
                                         placeholder="Enter task"
                                         value={task}
@@ -215,8 +207,7 @@ export default function MyForm() {
                                     {feature.tasks.length > 1 && (
                                         <button
                                             onClick={() => handleRemoveTask(index, taskIndex)}
-                                            className="deleteButton"
-                                            style={{ position: "absolute", right: "5px", top: "50%", transform: "translateY(-50%)", border: "none", cursor: "pointer" }}
+                                            className="deleteButton new-project-remove"
                                         >
                                             &times;
                                         </button>
@@ -231,7 +222,7 @@ export default function MyForm() {
 
             <button
                 onClick={handleSubmit}
-                className="allButton new-project-submit"
+                className="allButton"
                 disabled={isPending}
             >
                 {isPending ? "Creating project..." : "Create Project"}

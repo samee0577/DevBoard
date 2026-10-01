@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import authClient from '../auth';
+import { enterDemoMode, exitDemoMode, isDemoMode } from '../features/demo/demoMode';
 
 type User = {
   email?: string | null;
@@ -9,6 +11,7 @@ type User = {
 
 export default function Auth() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Record<string, unknown> | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
@@ -17,6 +20,9 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState('');
+  // Whether this browser has already been in the sandbox, so a returning guest is
+  // offered their own work back rather than being told to start over.
+  const [hasDemoSession, setHasDemoSession] = useState(() => isDemoMode());
 
   useEffect(() => {
     authClient.getSession().then((result) => {
@@ -35,6 +41,10 @@ export default function Auth() {
 
   useEffect(() => {
     if (session && user) {
+      // A real session always wins. Clearing the demo flag here stops a stale guest
+      // flag from outliving the sandbox and being read as "this user is a guest".
+      // No state reset is needed: this branch navigates away and unmounts.
+      exitDemoMode();
       navigate('/dashboard', { replace: true });
     }
   }, [session, user, navigate]);
@@ -86,6 +96,16 @@ export default function Auth() {
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Google sign-in failed');
     }
+  };
+
+  const handleExploreAsGuest = () => {
+    // No session is created and no token is minted: demo mode is purely a client-side
+    // flag. Clearing the cache first guarantees no real-user data from an earlier
+    // session can render inside the sandbox, in either direction.
+    queryClient.clear();
+    enterDemoMode();
+    setHasDemoSession(true);
+    navigate('/demo/dashboard');
   };
 
   if (loading) return <div className="auth-loading">Loading...</div>;
@@ -177,6 +197,20 @@ export default function Auth() {
             </>
           )}
         </p>
+
+        <div className="auth-guest">
+          <div className="auth-divider">
+            <span>or just look around</span>
+          </div>
+          <button type="button" className="auth-button auth-button--guest" onClick={handleExploreAsGuest}>
+            {hasDemoSession ? 'Resume your demo' : 'Explore as guest'}
+          </button>
+          <p className="auth-guest-hint">
+            {hasDemoSession
+              ? 'Pick up your sample workspace where you left it. Nothing you do here is saved to the database.'
+              : "Browse a sample project without an account. Editing is enabled, but nothing is saved to the database."}
+          </p>
+        </div>
       </div>
     </div>
   );

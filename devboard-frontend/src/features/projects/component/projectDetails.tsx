@@ -6,17 +6,16 @@ import { MyProgress } from "./ProgressBar"
 import { toast } from "react-toastify"
 import useDialog from "../hooks/useDialog"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { api } from "../lib/api"
+import { useGateway } from "../lib/gateway"
 import { invalidateProjects, projectKeys } from "../lib/queryKeys"
-import { deriveProject } from "../lib/applyTaskToggle"
 import { useTaskToggleQueue } from "../hooks/useTaskToggle"
-import type { projectType } from "../types/project"
 
 export default function ProjectDetails() {
 
     const { projectId } = useParams()
     const [isOffline, setIsOffline] = useState<boolean>(() => !navigator.onLine)
     const toggleQueue = useTaskToggleQueue()
+    const gateway = useGateway()
 
     useEffect(() => {
         const handleOnline = () => setIsOffline(false)
@@ -39,13 +38,16 @@ export default function ProjectDetails() {
             // state out from under an in-flight optimistic write.
             staleTime: 30_000,
             queryFn: async () => {
-                if (!navigator.onLine) {
+                // The sandbox serves local data, so an offline guest is not an error
+                // state there and must not be short-circuited to an error.
+                if (!gateway.isSandbox && !navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
                 }
 
-                // Re-derive the stored aggregates on the way in, so a stale
-                // completion or feature status in the database never reaches the UI.
-                return deriveProject(await api.get(`/api/projects/${projectId}`) as projectType)
+                // deriveProject runs inside each gateway's getProject, so the
+                // denormalised aggregates are re-derived on the way in here too and a
+                // stale completion or feature status never reaches the UI.
+                return gateway.getProject(projectId!)
             }
         }
     )
@@ -55,11 +57,11 @@ export default function ProjectDetails() {
     const { mutate, isPending } = useMutation({
 
         mutationFn: async (editProjectData: { projectId: number, name: string, summary: string, domain: string, techStack: string[] }) => {
-            if (!navigator.onLine) {
+            if (!gateway.isSandbox && !navigator.onLine) {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            await api.put("/api/projects", editProjectData)
+            await gateway.editProject(editProjectData)
         },
         onMutate: () => {
             const id = toast.loading("Updating project...")
@@ -103,11 +105,11 @@ export default function ProjectDetails() {
 
     const { mutate: addFeature, isPending: addFeaturePending } = useMutation({
         mutationFn: async (featureData: featureInterface) => {
-            if (!navigator.onLine) {
+            if (!gateway.isSandbox && !navigator.onLine) {
                 throw new Error("NETWORK_OFFLINE")
             }
 
-            return await api.put(`/api/projects/${projectId}/features`, featureData)
+            return await gateway.addFeature(projectId!, featureData)
         },
         onMutate: () => {
             const id = toast.loading("Adding feature...")
@@ -182,12 +184,13 @@ export default function ProjectDetails() {
     const { dialogRef, openDialog, closeDialog } = useDialog();
     const { dialogRef: editDialogRef, openDialog: openEditDialog, closeDialog: closeEditDialog } = useDialog();
 
-    const hasNetworkError = isOffline ||
+    // A guest offline is expected, not a fault, so the sandbox never enters this state.
+    const hasNetworkError = !gateway.isSandbox && (isOffline ||
         (error instanceof Error && (
             error.message === "NETWORK_OFFLINE" ||
             error.message.includes("Failed to fetch") ||
             error.message.includes("NetworkError")
-        ))
+        )))
     if (hasNetworkError) {
         return (
             <div style={{
@@ -284,7 +287,7 @@ export default function ProjectDetails() {
         setErrorTaskIndexes([])
         setTaskError(null)
 
-        if (!navigator.onLine) {
+        if (!gateway.isSandbox && !navigator.onLine) {
             toast.error("No network connection. Please check your internet connection and try again.")
             return
         }
@@ -321,9 +324,12 @@ export default function ProjectDetails() {
             <div className="project-grid-container">
                 <div className="project-details-main">
                     <div className="project-header-row">
-                        <div className="project-title-group">
-                            <h1 className="project-title">{ThisProject.name}</h1>
-                            <button className="buttonStyle" onClick={handleOpenEdit}>Edit</button>
+                        <div className="project-header-left">
+                            <div className="project-title-group">
+                                <h1 className="project-title">{ThisProject.name}</h1>
+                                <button className="buttonStyle" onClick={handleOpenEdit}>Edit</button>
+                            </div>
+                            <span className="projectDomain">{ThisProject.domain}</span>
 
                             <dialog ref={editDialogRef} className="popup" onClose={closeEditDialog} >
                                 <form method="dialog" onSubmit={(e) => { e.preventDefault(); handleEdit() }}>
@@ -386,9 +392,8 @@ export default function ProjectDetails() {
                         </div>
                         <MyProgress completion={ThisProject.completion} />
                     </div>
-                    <h2 className="field-label">{ThisProject.domain}</h2>
-                    <h2 className="field-label">Summary:</h2>{ThisProject.summary}
                     <StackList techStack={ThisProject.techStack} />
+                    <h2 className="field-label">Summary:</h2><p>{ThisProject.summary}</p>
                 </div>
                 <div className="project-details-features">
                     <FeatureList ThisProject={ThisProject} toggleQueue={toggleQueue} />

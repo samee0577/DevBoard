@@ -2,15 +2,17 @@ import { Link } from "react-router-dom"
 import "../../../index.css"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "react-toastify"
-import { api } from "../lib/api"
+import { useGateway } from "../lib/gateway"
 import { projectKeys } from "../lib/queryKeys"
 import { useSignOut } from "../../../hooks/useSignOut"
 
 export default function Navbar() {
 
+    const gateway = useGateway();
+
     const { data: projects, isLoading } = useQuery({
         queryKey: projectKeys.list(),
-        queryFn: async () => await api.get("/api/projects")
+        queryFn: async () => await gateway.listProjects()
     })
 
     const { handleSignOut, isSigningOut, error: signOutError } = useSignOut()

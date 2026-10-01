@@ -1,6 +1,6 @@
 import "./index.css"
 import { createRoot } from "react-dom/client"
-import { RouterProvider, createBrowserRouter } from "react-router-dom"
+import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom"
 import RootLayout from "./Layout/RootLayout"
 import DashboardLayout from "./Layout/DashboardLayout"
 import Dashboard from "./pages/Dashboard"
@@ -11,7 +11,13 @@ import { Analytics } from '@vercel/analytics/react'
 import { ApiError } from "./features/projects/lib/api.ts"
 import Auth from "./pages/Auth.tsx"
 import { requireAuthLoader } from "./requireAuth.ts"
+import DemoLayout from "./features/demo/DemoLayout"
 
+// The /demo branch is deliberately loader-free: guests have no session, so requiring
+// one here would be exactly what this feature is meant to avoid. Everything under it
+// is served by demoGateway, which never reaches the network. There is intentionally
+// no newProject route in this subtree, so a guest has no create path even if one is
+// requested by URL.
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,6 +38,24 @@ const router = createBrowserRouter([
           {
             path: 'newProject',
             element: <NewProject />
+          },
+          {
+            path: 'projectDetail/:projectId',
+            element: <ProjectDetail />
+          }
+        ]
+      },
+      {
+        path: 'demo',
+        element: <DemoLayout />,
+        children: [
+          {
+            index: true,
+            loader: () => redirect('/demo/dashboard')
+          },
+          {
+            path: 'dashboard',
+            element: <Dashboard />
           },
           {
             path: 'projectDetail/:projectId',

@@ -1,9 +1,9 @@
 import { useState, useSyncExternalStore } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { api } from "../lib/api";
+import { useGateway, type ProjectGateway } from "../lib/gateway";
 import { projectKeys } from "../lib/queryKeys";
-import { applyTaskStatus, deriveProject, findTaskStatus } from "../lib/applyTaskToggle";
+import { applyTaskStatus, findTaskStatus } from "../lib/applyTaskToggle";
 import type { projectType } from "../types/project";
 
 type ToggleRequest = {
@@ -22,7 +22,10 @@ export type TaskToggleQueue = {
 // Task ids are primary keys, so they are unique across projects and safe to key the
 // queue's state by. Keeping the queue project-agnostic means a single instance is
 // valid for the whole component lifetime, including a projectId change.
-function createTaskToggleQueue(client: QueryClient): TaskToggleQueue {
+// The gateway is captured once, when the queue is built. It is passed in rather than
+// read from context inside the queue because the queue outlives any single render,
+// and a stale gateway reference would send a guest's toggles to the real API.
+function createTaskToggleQueue(client: QueryClient, gateway: ProjectGateway): TaskToggleQueue {
     // Latest intent wins. Rapid clicks on the same task overwrite each other, so a
     // burst collapses into a single request carrying the final value.
     const pending = new Map<number, ToggleRequest>();
@@ -47,7 +50,7 @@ function createTaskToggleQueue(client: QueryClient): TaskToggleQueue {
     }
 
     async function send(request: ToggleRequest) {
-        await api.put("/api/projects/toggleTask", {
+        await gateway.toggleTask({
             status: request.status,
             taskId: request.taskId,
             featureId: request.featureId,
@@ -57,8 +60,8 @@ function createTaskToggleQueue(client: QueryClient): TaskToggleQueue {
 
     async function resyncFromServer(failed: ToggleRequest) {
         try {
-            const fresh = await api.get(`/api/projects/${failed.projectId}`);
-            client.setQueryData(projectKeys.detail(failed.projectId), deriveProject(fresh as projectType));
+            const fresh = await gateway.getProject(failed.projectId);
+            client.setQueryData(projectKeys.detail(failed.projectId), fresh as projectType);
         } catch {
             // Offline or failed: the next mount, focus or successful toggle recovers.
         }
@@ -139,9 +142,12 @@ function createTaskToggleQueue(client: QueryClient): TaskToggleQueue {
 
 export function useTaskToggleQueue(): TaskToggleQueue {
     const client = useQueryClient();
+    const gateway = useGateway();
     // Lazy initialiser, so the queue is built once and stays referentially stable
-    // for the lifetime of the component.
-    const [queue] = useState(() => createTaskToggleQueue(client));
+    // for the lifetime of the component. The gateway is captured at that moment; the
+    // demo and real gateways never change mid-mount, since each is provided by its
+    // own layout and swapped only by a route change that remounts this subtree.
+    const [queue] = useState(() => createTaskToggleQueue(client, gateway));
 
     return queue;
 }

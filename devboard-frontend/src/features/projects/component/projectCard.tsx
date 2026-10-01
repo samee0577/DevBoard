@@ -4,17 +4,18 @@ import { MyProgress } from "./ProgressBar";
 import { useState, useRef, useEffect } from "react";
 import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { api } from "../lib/api";
+import { useGateway } from "../lib/gateway"
 import { toast } from "react-toastify";
 import { invalidateProjects } from "../lib/queryKeys";
 
 export default function ProjectCard({ project }: { project: projectType }) {
 
     const queryClient =useQueryClient();
+    const gateway = useGateway();
     const { mutate, isPending } = useMutation({
 
         mutationFn: async (projectId: number) => {
-            await api.delete(`/api/projects/delete/${projectId}`)
+            await gateway.deleteProject(projectId)
         },
         onSuccess: () => {
             toast.success("Project deleted successfully!");
@@ -87,6 +88,13 @@ export default function ProjectCard({ project }: { project: projectType }) {
 
             <div className="project-card">
 
+                {/* Sandbox-only marker. Gated on the gateway rather than a route check so
+                    the same component can be reused if demo data ever moves elsewhere,
+                    and so a real user's projects can never pick this up. */}
+                {gateway.isSandbox && (
+                    <span className="projectCard-badge">Demo</span>
+                )}
+
                 {/* Three-Dot Menu Container */}
                 <div className="menuContainer" ref={menuRef}>
                     <button
@@ -112,7 +120,7 @@ export default function ProjectCard({ project }: { project: projectType }) {
                     )}
                 </div>
 
-                <Link to={`/projectDetail/${project.id}`} style={{ textDecoration: "none", color: "black" }}>
+                <Link to={gateway.detailHref(project.id)} style={{ textDecoration: "none", color: "black" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: "10px", paddingRight: "20px" }}>
                         <h2 className="project-card-title">{project.name}</h2>
                         <MyProgress completion={project.completion} />

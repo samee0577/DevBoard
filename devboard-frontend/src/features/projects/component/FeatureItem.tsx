@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import type { feature } from "../types/project";
 import useDialog from "../hooks/useDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/api";
+import { useGateway } from "../lib/gateway";
 import { invalidateProjects } from "../lib/queryKeys";
 import { TaskToggleButton } from "./TaskToggleButton";
 import type { TaskToggleQueue } from "../hooks/useTaskToggle";
@@ -12,10 +12,11 @@ import type { TaskToggleQueue } from "../hooks/useTaskToggle";
 export function FeatureItem({ feature, ThisProjectId, toggleQueue }: { feature: feature; ThisProjectId: number; toggleQueue: TaskToggleQueue; }) {
 
     const client = useQueryClient();
+    const gateway = useGateway();
 
     const { mutate: deleteFeature, isPending: isPendingDelete } = useMutation({
         mutationFn: async (featureId: number) => {
-            await api.delete(`/api/projects/${ThisProjectId}/features/${featureId}`)
+            await gateway.deleteFeature(ThisProjectId, featureId)
         },
         onSuccess: () => {
             invalidateProjects(client);
@@ -43,7 +44,7 @@ export function FeatureItem({ feature, ThisProjectId, toggleQueue }: { feature: 
 
     const { mutate: updateFeature, isPending: isPendingEdit } = useMutation({
         mutationFn: async (updatedFeature: { title: string; tasks: { title: string; status: boolean }[] }) => {
-            await api.put(`/api/projects/${ThisProjectId}/features/${feature.id}`, updatedFeature)
+            await gateway.updateFeature(ThisProjectId, feature.id, updatedFeature)
         },
         onSuccess: () => {
             invalidateProjects(client);

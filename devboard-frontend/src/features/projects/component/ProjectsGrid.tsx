@@ -1,14 +1,14 @@
 import ProjectCard from "./projectCard";
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { api } from "../lib/api";
-import { invalidateProjects, projectKeys } from "../lib/queryKeys";
-import type { projectType } from "../types/project";
+import { useQuery } from "@tanstack/react-query"
+import { useGateway } from "../lib/gateway";
+import { projectKeys } from "../lib/queryKeys";
 
 
 export default function ProjectsList() {
 
     const [isOffline, setIsOffline] = useState<boolean>(() => !navigator.onLine)
+    const gateway = useGateway()
 
     useEffect(() => {
         const handleOnline = () => setIsOffline(false)
@@ -24,42 +24,23 @@ export default function ProjectsList() {
     }, [])
 
 
-    const queryClient = useQueryClient()
-
     const { data: projectData, isLoading, error } = useQuery(
         {
             queryKey: projectKeys.list(),
             queryFn: async () => {
-                if (!navigator.onLine) {
+                if (!gateway.isSandbox && !navigator.onLine) {
                     throw new Error("NETWORK_OFFLINE")
                 }
-                const res = await api.get("/api/projects")
-                return res
+                return gateway.listProjects()
             }
         }
     )
-    const hasNetworkError = isOffline ||
+    const hasNetworkError = !gateway.isSandbox && (isOffline ||
         (error instanceof Error && (
             error.message === "NETWORK_OFFLINE" ||
             error.message.includes("Failed to fetch") ||
             error.message.includes("NetworkError")
-        ))
-
-    const demoProject = async () => {
-        try {
-            await api.post("/api/projects", {
-                name: "demo",
-                completion: 0,
-                domain: "testing",
-                summary: "lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus, quibusdam.",
-                techStack: ["react", "postgres", "claude"],
-                features: [{ title: "hello world feature", tasks: ["testing demo task", "another demo task"] }]
-            });
-            await invalidateProjects(queryClient);
-        } catch (error) {
-            console.error("Error creating demo project:", error);
-        }
-    }
+        )))
 
     if (hasNetworkError) {
         return (
@@ -85,9 +66,6 @@ export default function ProjectsList() {
     return (
         <div>
             <h1 className="page-title">Projects</h1>
-            <button className="buttonStyle" onClick={demoProject} style={{ display:"none", padding: "10px 15px", margin: "10px", border: "2px solid red", color: "red", cursor: "pointer", backgroundColor: "white" }}>
-                [demo button]
-            </button>
 
             {isLoading ? (
                 <div className="dashboard-grid">
@@ -104,7 +82,7 @@ export default function ProjectsList() {
                 </div>
             ) : (
                 <div className="dashboard-grid">
-                    {projectData?.map((project: projectType) => (
+                    {projectData?.map((project) => (
                         <ProjectCard
                             key={project.id}
                             project={project}
