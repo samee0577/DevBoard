@@ -122,10 +122,16 @@ export default function Auth() {
           <h1>{isSignUp ? 'Create your account' : 'Sign in to DevBoard'}</h1>
         </div>
 
-        <button type="button" className="auth-google" onClick={handleGoogleSignIn}>
-          <span className="auth-google-mark">G</span>
-          Continue with Google
-        </button>
+        <div className="auth-social">
+          <button type="button" className="auth-google" onClick={handleGoogleSignIn}>
+            <span className="auth-google-mark">G</span>
+            Google
+          </button>
+
+          <button type="button" className="auth-google auth-guest" onClick={handleExploreAsGuest}>
+            {hasDemoSession ? 'Resume Demo' : 'Demo'}
+          </button>
+        </div>
 
         <div className="auth-divider">
           <span>or</span>
@@ -197,15 +203,6 @@ export default function Auth() {
             </>
           )}
         </p>
-
-        <div className="auth-guest">
-          <div className="auth-divider">
-            <span>or just look around</span>
-          </div>
-          <button type="button" className="auth-button auth-button--guest" onClick={handleExploreAsGuest}>
-            {hasDemoSession ? 'Resume your demo' : 'Explore as guest'}
-          </button>
-        </div>
       </div>
     </div>
   );
