@@ -8,6 +8,7 @@ import { NewProject } from "./pages/NewProject"
 import ProjectDetail from "./pages/ProjectDetails"
 import { QueryClientProvider, QueryClient, QueryCache, MutationCache } from "@tanstack/react-query"
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { ApiError } from "./features/projects/lib/api.ts"
 import Auth from "./pages/Auth.tsx"
 import { requireAuthLoader } from "./requireAuth.ts"
@@ -83,5 +84,6 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
       <Analytics />
+      <SpeedInsights />
     </QueryClientProvider>  
 )
