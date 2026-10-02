@@ -49,6 +49,13 @@ input {
   align-items: center;
 }
 
+@media (max-width: 899px) {
+  .auth-shell {
+    min-height: 100vh;
+    justify-content: center;
+  }
+}
+
 .auth-card {
   width: min(100%, 420px);
   background: rgba(255, 253, 248, 0.92);
