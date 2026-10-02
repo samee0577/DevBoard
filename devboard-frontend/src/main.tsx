@@ -14,11 +14,6 @@ import Auth from "./pages/Auth.tsx"
 import { requireAuthLoader } from "./requireAuth.ts"
 import DemoLayout from "./features/demo/DemoLayout"
 
-// The /demo branch is deliberately loader-free: guests have no session, so requiring
-// one here would be exactly what this feature is meant to avoid. Everything under it
-// is served by demoGateway, which never reaches the network. There is intentionally
-// no newProject route in this subtree, so a guest has no create path even if one is
-// requested by URL.
 const router = createBrowserRouter([
   {
     path: "/",

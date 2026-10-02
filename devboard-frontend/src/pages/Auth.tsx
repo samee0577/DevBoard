@@ -205,11 +205,6 @@ export default function Auth() {
           <button type="button" className="auth-button auth-button--guest" onClick={handleExploreAsGuest}>
             {hasDemoSession ? 'Resume your demo' : 'Explore as guest'}
           </button>
-          <p className="auth-guest-hint">
-            {hasDemoSession
-              ? 'Pick up your sample workspace where you left it. Nothing you do here is saved to the database.'
-              : "Browse a sample project without an account. Editing is enabled, but nothing is saved to the database."}
-          </p>
         </div>
       </div>
     </div>
