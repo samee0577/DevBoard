@@ -24,7 +24,7 @@ A full-stack project management tool for tracking software projects, their featu
 
 - AI-assisted project planning: suggesting tech stacks, feature breakdowns, and estimated prep time based on a project summary
 - Docker containerization
-- Deployment to AWS EC2
+- Deployment to Render
 
 ## About This Project
 

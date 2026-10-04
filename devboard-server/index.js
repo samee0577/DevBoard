@@ -31,11 +31,28 @@ const apiRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     // Uptime monitors polling /api/db-health share an egress IP with real users,
-    // so health polling must not consume their request budget.
+    // so health polling must not consume their request budget. That endpoint is
+    // metered on its own by healthRateLimiter below rather than left unmetered.
     skip: (req) => req.path === "/api/db-health",
     message: { error: "Too many requests, please try again later." }
 });
 
+// /api/db-health has to stay reachable without a Bearer token: the platform health
+// probe and external uptime monitors hold no session. It must not be free though --
+// every hit takes a slot from the same pool as real queries, so an unmetered version
+// was a pre-auth connection-exhaustion DoS. A separate generous bucket keeps probes
+// from ever being starved by user traffic while still capping an attacker.
+// Sized for a shared proxy IP: behind a proxy (Render does this) req.ip is the proxy
+// for every caller, so this budget is effectively global rather than per-client.
+const healthRateLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests, please try again later." }
+});
+
+app.use("/api/db-health", healthRateLimiter);
 app.use(apiRateLimiter);
 
 app.use("/api", (req, res, next) => {
@@ -59,6 +76,14 @@ const pool = new Pool({
     port: 5432,
     user: PGUSER,
     password: PGPASSWORD,
+    // Cap the pool, and above all bound how long a request waits for a slot.
+    // pg-pool sets no default connectionTimeoutMillis, so once every connection is
+    // checked out a caller queues indefinitely and the whole API stops responding
+    // instead of failing. max is pinned to pg-pool's own default of 10 so it cannot
+    // drift if that default ever changes.
+    max: 10,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
     ssl: {
         require: true,
         rejectUnauthorized: false
@@ -317,11 +342,13 @@ app.get("/api/projects/:projectId", async (req, res) => {
 
 // db connection check 
 app.get("/api/db-health", async (req, res) => {
-    let client;
-
     try {
-        client = await pool.connect();
-        await client.query("SELECT 1");
+        // pool.query checks a connection out and returns it automatically, so there is
+        // no client to leak when this throws.
+        // query_timeout bounds how long we wait on the wire. It must stay snake_case:
+        // pg reads config.query_timeout off the raw config object and silently ignores
+        // a camelCase queryTimeout, which would leave this check unbounded.
+        await pool.query({ text: "SELECT 1", query_timeout: 2000 });
         res.json({
             ok: true,
             message: "Database connection successful"
@@ -332,10 +359,6 @@ app.get("/api/db-health", async (req, res) => {
             ok: false,
             message: "Database connection failed"
         });
-    } finally {
-        if (client) {
-            client.release();
-        }
     }
 });
 
